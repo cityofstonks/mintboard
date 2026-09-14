@@ -140,24 +140,26 @@ export interface HolderStats {
   /** Matches a partner's `handle`, lowercased, so a card can find its stats. */
   handle: string
   collection: string
-  chain: string
-  contract: string
-  /** Hours after each mint that the flip question is asked. */
-  windowHours: number
-  minters: number
-  held: number
-  /** Every minter who ever sold — not only the ones inside the window. */
-  flipped: number
   /**
-   * Of those sellers, how many went inside `windowHours`. Optional because
-   * scans taken before this was recorded do not have it, and a card must not
-   * invent one: without it the card says "sold", never "sold within 24h".
+   * How well a community held the allocation YOU gave them.
+   *
+   * This is not about the partner's own collection — how their own minters
+   * behaved says nothing about what happens when you hand their room spots.
+   * The cohort is the wallets on that partner's allocation list, and the
+   * token measured is yours.
    */
-  flippedWithin?: number
-  accumulated: number
+  /** Wallets from this community's allocation that actually minted. */
+  minted: number
+  /** Of those, how many still hold one they minted. The retention question. */
+  held: number
+  /**
+   * Tokens sitting in this community's wallets now, secondary buys included.
+   * Larger than `minted` means they kept buying after the mint, which is the
+   * strongest signal a partner gives you.
+   */
+  keysNow: number
   /** ISO. Stats age badly and a card should be able to say how old they are. */
   scannedAt: string
-  /** Blocks covered, so a rerun can be checked against the last one. */
-  fromBlock: number
-  toBlock: number
+  /** The block the ownership replay ran to, so a rerun can be compared. */
+  atBlock: number
 }

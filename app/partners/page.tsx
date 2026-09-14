@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Directory from './Directory'
 import Apply from './Apply'
 import Quality from './Quality'
-import { allStats } from '@/lib/holderStats'
+import { allStats, byRetention } from '@/lib/holderStats'
 
 export const metadata: Metadata = {
   title: 'Collections — Mintboard',
@@ -26,14 +26,15 @@ export default function Partners() {
         <>
           <p className="heading">What their holders did last time</p>
           <p className="lede" style={{ marginBottom: 16 }}>
-            Read off each collection&apos;s own Transfer logs: of the wallets that minted, how many
-            kept it, sold it, or went on to buy more. Shares of minters rather than of supply, so
-            one whale minting fifty counts once.
+            Every one of these communities was given an allocation here. This is what they did
+            with it: of the wallets that took a spot and minted, how many still hold one.
+            Read off our own Transfer logs, counting wallets rather than tokens, so a room
+            that minted fifty between three people cannot look like fifty holders.
           </p>
           <div className="cards">
-            {allStats().map(s => (
+            {byRetention(allStats()).map(s => (
               <article className="card" key={s.handle}>
-                <div className="code">{s.chain.toUpperCase()}</div>
+                <div className="code">COLLAB</div>
                 <h3>{s.collection}</h3>
                 <Quality s={s} />
               </article>

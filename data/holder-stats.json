@@ -1,73 +1,119 @@
 [
   {
-    "handle": "stonkbrokers",
-    "collection": "Stonk Brokers",
-    "chain": "robinhood",
-    "contract": "0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0",
-    "windowHours": 24,
-    "minters": 493,
-    "held": 88,
-    "flipped": 388,
-    "accumulated": 17,
-    "scannedAt": "2026-09-14T05:59:55.954Z",
-    "fromBlock": 12500546,
-    "toBlock": 62572964
-  },
-  {
-    "handle": "ccff00",
-    "collection": "CCFF00",
-    "chain": "robinhood",
-    "contract": "0x505a22ffed8d37ebe580ffd98d2cdb0021189146",
-    "windowHours": 24,
-    "minters": 1954,
-    "held": 1242,
-    "flipped": 591,
-    "accumulated": 121,
-    "scannedAt": "2026-09-14T11:28:19.096Z",
-    "fromBlock": 11485748,
-    "toBlock": 62764720
-  },
-  {
     "handle": "cannacats",
     "collection": "CannaCats",
-    "chain": "robinhood",
-    "contract": "0x289c8ce652f38029867842048068b39bd0464a3f",
-    "windowHours": 24,
-    "minters": 114,
-    "held": 16,
-    "flipped": 90,
-    "accumulated": 8,
-    "scannedAt": "2026-09-14T15:51:39.624Z",
-    "fromBlock": 34978761,
-    "toBlock": 62926635
-  },
-  {
-    "handle": "wifoutlaws",
-    "collection": "WIF Outlaws",
-    "chain": "robinhood",
-    "contract": "0x12a4c7659a4b7c4a2870b5167c4f8b014c7fa690",
-    "windowHours": 24,
-    "minters": 1670,
-    "held": 288,
-    "flipped": 1330,
-    "accumulated": 52,
-    "scannedAt": "2026-09-14T16:05:30.002Z",
-    "fromBlock": 40004792,
-    "toBlock": 62927978
+    "minted": 16,
+    "held": 8,
+    "keysNow": 68,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
   },
   {
     "handle": "pixelord",
     "collection": "Pixelord",
-    "chain": "robinhood",
-    "contract": "0x8215824669c453136cabe59a079c32aca2f87cd5",
-    "windowHours": 24,
-    "minters": 663,
-    "held": 41,
-    "flipped": 594,
-    "flippedWithin": 343,
-    "accumulated": 28,
-    "scannedAt": "2026-09-14T22:04:39.145Z",
-    "fromBlock": 35624859,
-    "toBlock": 63145777
+    "minted": 33,
+    "held": 14,
+    "keysNow": 75,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "rhmachines",
+    "collection": "RH Machines (BTC Ordinals)",
+    "minted": 85,
+    "held": 33,
+    "keysNow": 293,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "birbs",
+    "collection": "BIRBS",
+    "minted": 13,
+    "held": 5,
+    "keysNow": 8,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "ccff00",
+    "collection": "CCFF00",
+    "minted": 58,
+    "held": 16,
+    "keysNow": 76,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "zaxweb3",
+    "collection": "Zax Web3",
+    "minted": 29,
+    "held": 6,
+    "keysNow": 15,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "legacydao",
+    "collection": "Legacy DAO",
+    "minted": 47,
+    "held": 9,
+    "keysNow": 22,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "shreddertegg",
+    "collection": "Shredder x Tegg",
+    "minted": 22,
+    "held": 3,
+    "keysNow": 7,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "lscabal",
+    "collection": "LsCabal",
+    "minted": 25,
+    "held": 3,
+    "keysNow": 5,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "cloudquest",
+    "collection": "Cloud Quest",
+    "minted": 17,
+    "held": 2,
+    "keysNow": 6,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "akagami",
+    "collection": "Akagami / Sailors of WEB3",
+    "minted": 12,
+    "held": 1,
+    "keysNow": 1,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "robinrabbits",
+    "collection": "Robin Rabbits",
+    "minted": 53,
+    "held": 4,
+    "keysNow": 19,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
+  },
+  {
+    "handle": "cookfi",
+    "collection": "CookFi",
+    "minted": 13,
+    "held": 0,
+    "keysNow": 0,
+    "scannedAt": "2026-09-14T22:17:50.420Z",
+    "atBlock": 63154283
   }
 ]

@@ -1,26 +1,36 @@
 #!/usr/bin/env node
 /**
- * Did a collection's minters hold, flip, or buy more?
+ * How well did a community hold the allocation YOU gave them?
  *
- *   node scripts/holder-stats.mjs --handle AstralSentinels --chain robinhood \
- *     --contract 0x… --from-block 59000000 [--window 24] [--write]
+ *   node scripts/holder-stats.mjs --handle pixelord --name "Pixelord" \
+ *     --chain robinhood --contract 0xYOUR_TOKEN --cohort wallets.txt --write
  *
- * Walks every Transfer log for the contract and follows each token from the
- * mint forward. The cohort is the WALLETS THAT MINTED, not the tokens, so one
- * whale minting fifty counts once — otherwise a single wallet's behaviour
- * stands in for a whole community's, which is the opposite of what this is for.
+ * WHAT THIS IS NOT. It does not scan the partner's own collection. How their
+ * own minters behaved tells you nothing about what happens when you hand
+ * their room spots in yours — those are different people making a different
+ * decision about a different token. Measuring the partner's collection was
+ * the original mistake here and it produced cards that were confidently wrong
+ * in both directions.
  *
- * THE SUBTLE PART, and the reason this is a file rather than a one-off:
+ * THE COHORT is the wallets on that partner's allocation list (--cohort, one
+ * address per line). THE TOKEN is yours (--contract). Of the cohort wallets
+ * that actually minted, how many still hold one they minted.
  *
- * A sale and moving a token to your own second wallet look IDENTICAL in a
- * Transfer log. Both are from → to. What separates them is the transaction
- * they sit in: moving your own token is a direct call to the NFT contract, so
- * the transaction's `to` IS the collection. A marketplace sale is a call to
- * the marketplace, which moves the token on your behalf, so the transaction's
- * `to` is some other address. Only the second kind is counted as a flip.
+ * Holding means still owning a token they MINTED, not just owning any — a
+ * wallet that sold its mint and bought two on secondary did sell what you
+ * gave it, and `keysNow` carries the buying separately rather than letting it
+ * cancel the sale.
  *
- * Counting a self-custody move as a flip would libel the most careful holders
- * in a community — the ones who move mints to a cold wallet.
+ * Wallets, never tokens: a room that minted fifty between three people must
+ * not be able to look like fifty holders.
+ *
+ * NEEDS AN RPC THAT WILL TAKE IT. This walks the whole history in 20k-block
+ * spans, which is thousands of requests against a long chain, and a public
+ * endpoint will rate-limit or Cloudflare-challenge you part way through. Set
+ * RPC_<CHAIN> to something with real allowance. A partial replay is the
+ * dangerous failure here: it under-counts transfers and reports a community
+ * as holding tokens it already sold, so check the run finished rather than
+ * trusting the last line it printed.
  */
 const arg = (n, d = '') => { const i = process.argv.indexOf(`--${n}`); return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : d }
 const WRITE = process.argv.includes('--write')
@@ -29,11 +39,16 @@ const NAME = arg('name', HANDLE)
 const CHAIN = arg('chain', 'ethereum')
 const CONTRACT = arg('contract').toLowerCase()
 const FROM = Number(arg('from-block', '0'))
-const WINDOW_H = Number(arg('window', '24'))
-if (!HANDLE || !CONTRACT) {
-  console.error('usage: --handle <x> --contract 0x… [--chain ethereum] [--from-block N] [--window 24] [--write]')
+const COHORT_FILE = arg('cohort')
+if (!HANDLE || !CONTRACT || !COHORT_FILE) {
+  console.error('usage: --handle <x> --contract 0xYOURTOKEN --cohort wallets.txt [--chain ethereum] [--from-block N] [--write]')
+  console.error('  --cohort is required: without the allocation list there is no community to measure.')
   process.exit(1)
 }
+const { readFileSync: _rf } = await import('node:fs')
+const COHORT = new Set(_rf(COHORT_FILE, 'utf8').split(/\s+/)
+  .map(a => a.trim().toLowerCase()).filter(a => /^0x[0-9a-f]{40}$/.test(a)))
+if (!COHORT.size) { console.error(`No wallets read from ${COHORT_FILE}.`); process.exit(1) }
 
 const RPCS = {
   ethereum: process.env.RPC_ETHEREUM ?? 'https://ethereum-rpc.publicnode.com',
@@ -236,20 +251,10 @@ for (let i = 0; i < wantBlocks.length; i += 8) {
   if (i % 320 === 0) console.log(`  ${ts.size}/${wantBlocks.length} block times…`)
 }
 
-/** Which of those moves were a direct call to the collection — i.e. not a sale. */
-const direct = new Set()
-const txList = [...outTxs]
-for (let i = 0; i < txList.length; i += 8) {
-  await Promise.all(txList.slice(i, i + 8).map(async h => {
-    const tx = await rpc('eth_getTransactionByHash', [h])
-    if (tx && (tx.to ?? '').toLowerCase() === CONTRACT) direct.add(h)
-  }))
-  if (i % 320 === 0) console.log(`  ${Math.min(i + 16, txList.length)}/${txList.length} transactions…`)
-}
+
 
 const mintedBy = new Map()      // wallet -> Set(tokenId)
-const mintedAt = new Map()      // tokenId -> timestamp
-const flippedFast = new Set()   // wallets that sold a minted token inside the window
+const currentOwner = new Map()  // tokenId -> wallet holding it now
 const balance = new Map()       // wallet -> current count
 
 for (const l of all) {
@@ -259,35 +264,37 @@ for (const l of all) {
   if (from === ZERO) {
     if (!mintedBy.has(to)) mintedBy.set(to, new Set())
     mintedBy.get(to).add(id)
-    mintedAt.set(id, t)
-  } else if (mintedBy.get(from)?.has(id)) {
-    // A token leaving the wallet that minted it. Only a marketplace move
-    // counts: a direct call to the collection is the holder shifting their
-    // own token, usually to cold storage.
-    const isSale = !direct.has(l.transactionHash)
-    const within = t - (mintedAt.get(id) ?? t) <= WINDOW_H * 3600
-    if (isSale && within) flippedFast.add(from)
   }
+  // Logs arrive in order, so the last writer wins and this ends as the
+  // current owner of every token.
+  currentOwner.set(id, to === ZERO ? '' : to)
 
   if (from !== ZERO) balance.set(from, (balance.get(from) ?? 0) - 1)
   if (to !== ZERO) balance.set(to, (balance.get(to) ?? 0) + 1)
 }
 
-let held = 0, flipped = 0, accumulated = 0
-for (const [w, tokens] of mintedBy) {
-  const now = balance.get(w) ?? 0
-  if (now > tokens.size) accumulated++
-  else if (flippedFast.has(w)) flipped++
-  else if (now >= tokens.size) held++
-  else flipped++   // sold, just not inside the window
+/*
+ * Only the cohort. Everybody else who minted is somebody else's community and
+ * has no business in this partner's number.
+ */
+let minted = 0, held = 0, keysNow = 0
+for (const w of COHORT) {
+  keysNow += balance.get(w) ?? 0
+  const tokens = mintedBy.get(w)
+  if (!tokens?.size) continue          // took a spot, never minted
+  minted++
+  // Still owns at least one it minted. `stillOwns` is rebuilt from the replay
+  // rather than inferred from a balance, because a balance cannot tell a kept
+  // mint apart from a replacement bought on secondary.
+  if ([...tokens].some(id => (currentOwner.get(id) ?? '') === w)) held++
 }
 
-const minters = mintedBy.size
+const minters = minted
 const pct = n => minters ? Math.round((n / minters) * 100) : 0
-console.log(`\n${NAME}: ${minters} minters`)
-console.log(`  held         ${String(held).padStart(5)}  ${pct(held)}%`)
-console.log(`  flipped      ${String(flipped).padStart(5)}  ${pct(flipped)}%   (sold; ${flippedFast.size} inside ${WINDOW_H}h)`)
-console.log(`  accumulated  ${String(accumulated).padStart(5)}  ${pct(accumulated)}%`)
+console.log(`\n${NAME}: ${COHORT.size} on the allocation list, ${minted} of them minted`)
+console.log(`  still holding ${String(held).padStart(5)}  ${pct(held)}%`)
+console.log(`  sold          ${String(minted - held).padStart(5)}  ${pct(minted - held)}%`)
+console.log(`  in the room now ${String(keysNow).padStart(3)} token(s)${keysNow > minted ? ' — they kept buying' : ''}`)
 
 /*
  * Zero minters is never an answer. It means the scan started above the mints,
@@ -302,15 +309,8 @@ if (!minters) {
 
 const row = {
   handle: HANDLE, collection: NAME, chain: CHAIN, contract: CONTRACT,
-  windowHours: WINDOW_H, minters, held, flipped, accumulated,
-  /*
-   * How many of the sellers went inside the window, as opposed to selling at
-   * some point later. `flipped` is every minter who ever sold; a card that
-   * prints that number under the words "sold within 24h" overstates the
-   * flipping of a partner's community, which is the one number a partner will
-   * push back on. Both are kept so the card can say exactly which it means.
-   */
-  flippedWithin: flippedFast.size,
+  minted, held, keysNow,
+
   scannedAt: new Date().toISOString(), fromBlock: start, toBlock: latest,
 }
 if (!WRITE) { console.log('\n--- dry run, nothing written. --write to save ---'); process.exit(0) }
