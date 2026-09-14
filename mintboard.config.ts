@@ -21,8 +21,9 @@ export interface Collection {
 export interface BoardConfig {
   name: string
   tagline: string
-  /** Any CSS colour. One accent carries the whole page. */
+  /** Any CSS colour. The two blend through the buttons and the backdrop. */
   accent: string
+  accent2: string
   /** Where "enter the raffle" sends people. */
   discordInvite: string
   /**
@@ -42,7 +43,10 @@ export interface BoardConfig {
 const config: BoardConfig = {
   name: 'Mintboard',
   tagline: 'The mints this wallet can actually enter, and when.',
-  accent: '#CCFF00',
+  // Pick any two. Everything else — buttons, the aurora behind the glass, the
+  // highlighted phase — is mixed from them, so one change reskins the tool.
+  accent: '#6366f1',
+  accent2: '#22d3ee',
   discordInvite: 'https://discord.gg/your-invite',
 
   gate: null,

@@ -1,88 +1,256 @@
-/* One accent, set from mintboard.config.ts, carries the whole page. */
+/* ──────────────────────────────────────────────────────────────────────────
+   Mintboard — glass.
+
+   Two surfaces and one light source. Everything is a translucent pane over a
+   slow aurora, lit from the top-left, so depth comes from blur and a bright
+   top border rather than from drop shadows. Panes are the ONLY container:
+   no cards-on-cards, because a pane over a pane stops reading as glass and
+   starts reading as fog.
+
+   Light and dark are real, not an inversion. The light theme tints the glass
+   white over a warm neutral; the dark theme tints it with the accent over
+   near-black. Every colour is a token so a community can drop in one accent
+   and have the whole surface follow.
+   ────────────────────────────────────────────────────────────────────────── */
+
 :root {
-  --ink: #06080c;
-  --panel: #0a0e14;
-  --border: #1b2430;
-  --border-strong: #2b3947;
-  --text: #d7e0ea;
-  --muted: #8c9aab;
-  --faint: #5d6b7c;
-  --live: #7fb05a;
-  --warn: #e0a33a;
-  --accent: #ccff00;
-  color-scheme: dark;
+  --accent: #6366f1;
+  --accent-2: #22d3ee;
+
+  --bg: #f7f7fb;
+  --bg-deep: #eceaf5;
+  --ink: #12131a;
+  --muted: #5a5f72;
+  --faint: #8b90a3;
+
+  --glass: rgba(255, 255, 255, .62);
+  --glass-soft: rgba(255, 255, 255, .38);
+  --edge: rgba(18, 19, 26, .10);
+  --edge-lit: rgba(255, 255, 255, .85);
+  --shadow: 0 1px 2px rgba(18,19,26,.04), 0 12px 32px -12px rgba(18,19,26,.16);
+
+  --live: #16a34a;
+  --warn: #d97706;
+  --danger: #dc2626;
+
+  --r: 16px;
+  --r-sm: 10px;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0b10;
+    --bg-deep: #05060a;
+    --ink: #eef0f7;
+    --muted: #a3a9bd;
+    --faint: #6f7589;
+
+    --glass: rgba(255, 255, 255, .055);
+    --glass-soft: rgba(255, 255, 255, .03);
+    --edge: rgba(255, 255, 255, .10);
+    --edge-lit: rgba(255, 255, 255, .18);
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 20px 48px -20px rgba(0,0,0,.8);
+
+    --live: #4ade80;
+    --warn: #fbbf24;
+    --danger: #f87171;
+  }
+}
+
 * { box-sizing: border-box; }
+html { color-scheme: light dark; }
+
 body {
-  margin: 0; background: var(--ink); color: var(--text);
-  font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.65 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -.006em;
 }
-a { color: var(--accent); }
-.wrap { max-width: 1100px; margin: 0 auto; padding: 34px 16px 80px; }
-h1 { font-size: 30px; margin: 0 0 12px; letter-spacing: -.02em; }
-h1 span { color: var(--accent); }
-.lede { color: var(--muted); max-width: 66ch; font-size: 14.5px; }
 
-.ask { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 6px; }
-.ask input {
-  flex: 1; min-width: 260px; background: #050709; border: 1px solid var(--border);
-  color: var(--text); font: inherit; font-size: 13px; padding: 11px 13px;
+/* The light source. Fixed, so panes drift over it rather than with it. */
+body::before {
+  content: '';
+  position: fixed; inset: -20vmax;
+  z-index: -1;
+  background:
+    radial-gradient(42vmax 42vmax at 14% 8%, color-mix(in oklab, var(--accent) 42%, transparent), transparent 62%),
+    radial-gradient(38vmax 38vmax at 88% 12%, color-mix(in oklab, var(--accent-2) 38%, transparent), transparent 60%),
+    radial-gradient(46vmax 46vmax at 62% 96%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 64%),
+    var(--bg-deep);
+  filter: blur(38px) saturate(118%);
+  opacity: .5;
 }
-.ask input:focus { outline: none; border-color: var(--accent); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body::before { opacity: .34; }
+}
+
+a { color: inherit; text-decoration-color: color-mix(in oklab, var(--accent) 55%, transparent); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--accent); }
+code { font: 12.5px/1.5 var(--mono); background: var(--glass-soft); border: 1px solid var(--edge);
+  padding: 1px 6px; border-radius: 6px; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 40px 20px 96px; }
+
+h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.08; margin: 0 0 14px; letter-spacing: -.032em; font-weight: 650; }
+h1 span {
+  background: linear-gradient(100deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+h2 { font-size: 20px; letter-spacing: -.02em; font-weight: 620; margin: 0 0 8px; }
+.lede { color: var(--muted); font-size: 16px; max-width: 64ch; margin: 0 0 8px; }
+.note { font-size: 13px; color: var(--faint); }
+.heading { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
+  font-weight: 600; margin: 34px 0 12px; }
+
+/* ── the pane ─────────────────────────────────────────────────────────── */
+.pane {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--edge);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+/* The lit top edge. This one hairline is what sells glass over flat. */
+.pane::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, var(--edge-lit), transparent 34%);
+  opacity: .5; mix-blend-mode: overlay;
+}
+
+/* ── controls ─────────────────────────────────────────────────────────── */
+input, select, textarea {
+  width: 100%; font: inherit; font-size: 14px; color: var(--ink);
+  background: var(--glass-soft); border: 1px solid var(--edge);
+  border-radius: var(--r-sm); padding: 11px 13px;
+  backdrop-filter: blur(8px); transition: border-color .15s, box-shadow .15s;
+}
+input::placeholder, textarea::placeholder { color: var(--faint); }
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: color-mix(in oklab, var(--accent) 60%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 16%, transparent);
+}
 button, .btn {
-  background: var(--accent); color: #0b1200; border: 0; font: inherit; font-weight: 700;
-  padding: 11px 18px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 580; letter-spacing: -.01em;
+  color: #fff; border: 0; border-radius: var(--r-sm); padding: 11px 18px; cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent-2) 55%, var(--accent)));
+  box-shadow: 0 1px 2px rgba(0,0,0,.14), 0 8px 20px -10px color-mix(in oklab, var(--accent) 70%, transparent);
+  transition: transform .12s, filter .15s, box-shadow .15s;
+  text-decoration: none; display: inline-block;
 }
-.note { font-size: 12px; color: var(--faint); }
+button:hover:not(:disabled), .btn:hover { filter: brightness(1.07); transform: translateY(-1px); }
+button:active:not(:disabled) { transform: translateY(0); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.ghost {
+  background: var(--glass-soft); color: var(--ink); border: 1px solid var(--edge);
+  box-shadow: none; backdrop-filter: blur(8px);
+}
+button.quiet { background: none; color: var(--faint); box-shadow: none; padding: 8px 10px; }
+button.quiet:hover { color: var(--ink); }
 
-.rail { position: relative; padding: 0 0 4px 26px; }
-.rail::before { content: ''; position: absolute; left: 5px; top: 14px; bottom: 0; width: 1px; background: var(--border); }
-.rail h2 { display: flex; align-items: center; gap: 9px; margin: 24px 0 10px;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); font-weight: 400; }
-.rail h2 i { position: absolute; left: 0; width: 11px; height: 11px; border-radius: 50%;
-  border: 1px solid var(--border-strong); background: var(--ink); }
-.rail.r-live h2, .rail.r-live h2 b { color: var(--live); }
-.rail.r-live h2 i { background: var(--live); border-color: var(--live); }
-.rail.r-raffle h2 { color: var(--warn); }
-.rail.r-raffle h2 i { background: var(--warn); border-color: var(--warn); }
+.ask { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 8px; }
+.ask input { flex: 1; min-width: 280px; }
 
-.cards { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); align-items: stretch; }
-.card { border: 1px solid var(--border); background: var(--panel); padding: 13px;
-  display: flex; flex-direction: column; gap: 7px; }
-.card.is-live { border-color: var(--live); }
-.card.has-action { border-color: var(--warn); }
-.card.raffle { border-color: rgba(224,163,58,.45); }
-.code { color: var(--accent); font-weight: 700; letter-spacing: .1em; font-size: 12px; }
-.card.raffle .code { color: var(--warn); }
-.card h3 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.015em; }
-.card h3 a { color: inherit; }
-.big { font-size: 21px; font-variant-numeric: tabular-nums; }
+/* ── rails ────────────────────────────────────────────────────────────── */
+.rail { margin: 0 0 10px; }
+.rail > h2 {
+  display: flex; align-items: center; gap: 9px; margin: 32px 0 14px;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); font-weight: 600;
+}
+.rail > h2 i {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--faint);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--faint) 18%, transparent);
+}
+.rail > h2 b { font-weight: 600; color: var(--faint); }
+.rail.r-live > h2 i { background: var(--live); box-shadow: 0 0 0 4px color-mix(in oklab, var(--live) 22%, transparent); animation: pulse 2.4s ease-in-out infinite; }
+.rail.r-hour > h2 i, .rail.r-raffle > h2 i { background: var(--warn); box-shadow: 0 0 0 4px color-mix(in oklab, var(--warn) 22%, transparent); }
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+@media (prefers-reduced-motion: reduce) { .rail.r-live > h2 i { animation: none } }
+
+.cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); align-items: stretch; }
+
+.card {
+  position: relative; padding: 18px; display: flex; flex-direction: column; gap: 10px;
+  background: var(--glass); border: 1px solid var(--edge); border-radius: var(--r);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  transition: transform .16s, box-shadow .16s;
+}
+.card::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, var(--edge-lit), transparent 30%); opacity: .45; mix-blend-mode: overlay;
+}
+.card:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 22px 44px -18px rgba(0,0,0,.28); }
+.card.is-live { border-color: color-mix(in oklab, var(--live) 45%, transparent); }
+.card.has-action { border-color: color-mix(in oklab, var(--warn) 50%, transparent); }
+.card.raffle { border-color: color-mix(in oklab, var(--warn) 34%, transparent); }
+
+.card h3 { margin: 0; font-size: 19px; font-weight: 620; letter-spacing: -.022em; }
+.code { font: 600 11px/1 var(--mono); letter-spacing: .08em; color: var(--faint); }
+.big { font-size: 27px; font-weight: 640; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.s-live { color: var(--live) } .s-soon { color: var(--ink) }
+.s-tbd { color: var(--faint) } .s-closed { color: var(--faint) }
 .card.raffle .big { color: var(--warn); }
-.s-live { color: var(--live); } .s-soon { color: var(--accent); }
-.s-tbd { color: var(--faint); } .s-closed { color: #6b5a4a; }
-.at { font-size: 11px; color: var(--faint); }
-.meta, .tiers span { font-size: 12.5px; color: var(--faint); line-height: 1.5; }
-.tiers { display: flex; flex-direction: column; gap: 3px; }
-.tiers b { color: var(--text); }
-.why { font-size: 13px; color: var(--muted); line-height: 1.5; }
-.why b { color: var(--accent); font-weight: 400; }
-.sub { font-size: 13px; color: var(--muted); line-height: 1.55; }
-.tier { font-size: 10.5px; letter-spacing: .12em; padding: 3px 8px; border: 1px solid var(--border); color: var(--muted); }
-.phases { display: flex; flex-wrap: wrap; gap: 1px; }
-.ph { border: 1px solid var(--border); padding: 4px 9px; font-size: 10.5px; letter-spacing: .08em; color: var(--faint); white-space: nowrap; }
-.ph.mine { border-color: var(--accent); color: var(--accent); }
-.enter { display: block; margin: auto 0 0; padding: 10px 14px; text-align: center; background: var(--warn);
-  color: #140d02; font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
-.act { border-left: 2px solid var(--warn); background: rgba(224,163,58,.08); padding: 8px 12px; font-size: 12px; line-height: 1.6; }
-.act b { color: var(--warn); font-weight: 400; letter-spacing: .1em; font-size: 10px; display: block; text-transform: uppercase; }
-.warn { border-left: 2px solid var(--accent); background: rgba(204,255,0,.07); padding: 10px 14px; font-size: 12.5px; }
-.locked { border: 1px solid var(--border-strong); background: rgba(204,255,0,.05); padding: 22px 24px; margin: 20px 0; }
-.locked h2 { margin: 0 0 8px; font-size: 15px; color: var(--accent); }
-.empty { border: 1px solid var(--border); padding: 26px; color: var(--faint); font-size: 13px; }
+.at { font-size: 12.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.meta, .tiers span { font-size: 13px; color: var(--muted); }
+.tiers { display: flex; flex-direction: column; gap: 4px; }
+.tiers b, .meta b { font-weight: 580; color: var(--ink); }
+.why { font-size: 13.5px; color: var(--muted); }
+.why b { font-weight: 500; color: color-mix(in oklab, var(--accent) 70%, var(--ink)); }
+.sub { font-size: 13.5px; color: var(--muted); }
+
+/* Pills: the one place a second container is allowed, because they are tags. */
+.tier, .held span, .ph {
+  display: inline-block; font-size: 11.5px; font-weight: 560; letter-spacing: .01em;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--glass-soft); border: 1px solid var(--edge); color: var(--muted);
+}
+.ph { font-family: var(--mono); font-size: 11px; }
+.ph.mine {
+  border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  color: color-mix(in oklab, var(--accent) 75%, var(--ink));
+}
+.phases { display: flex; flex-wrap: wrap; gap: 6px; }
 .held { display: flex; flex-wrap: wrap; gap: 8px; }
-.held span { border: 1px solid var(--border); padding: 5px 10px; font-size: 11.5px; color: var(--muted); }
-.held b { color: var(--accent); font-weight: 400; }
-.heading { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin: 26px 0 8px; }
-/* Embedded in somebody else's page: no outer chrome, no page padding. */
-.embed .wrap { padding: 14px; }
+.held b { color: var(--ink); }
+
+.enter {
+  display: block; margin: auto 0 0; text-align: center; text-decoration: none;
+  color: #fff; font-weight: 580; font-size: 14px; padding: 11px 16px; border-radius: var(--r-sm);
+  background: linear-gradient(135deg, var(--warn), color-mix(in oklab, var(--warn) 60%, var(--accent)));
+  box-shadow: 0 8px 20px -10px color-mix(in oklab, var(--warn) 70%, transparent);
+}
+.enter:hover { filter: brightness(1.07); }
+
+.act, .warn, .locked, .empty {
+  border-radius: var(--r-sm); padding: 14px 16px; font-size: 13.5px;
+  border: 1px solid var(--edge); background: var(--glass-soft); backdrop-filter: blur(10px);
+}
+.act { border-color: color-mix(in oklab, var(--warn) 40%, transparent);
+  background: color-mix(in oklab, var(--warn) 10%, transparent); }
+.act b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--warn); margin-bottom: 4px; }
+.warn { border-color: color-mix(in oklab, var(--accent) 34%, transparent);
+  background: color-mix(in oklab, var(--accent) 8%, transparent); margin: 14px 0 0; }
+.locked { padding: 26px; margin: 20px 0; }
+.locked h2 { color: var(--ink); }
+.empty { padding: 30px; color: var(--muted); text-align: center; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; padding: 10px 14px; font-size: 11px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--faint); border-bottom: 1px solid var(--edge); font-weight: 600; }
+td { padding: 12px 14px; border-bottom: 1px solid var(--edge); color: var(--muted); }
+
+/* Embedded in somebody else's page: no page chrome, transparent ground so the
+   host's own background shows through the glass instead of ours. */
+.embed .wrap { padding: 16px; }
 .embed h1, .embed .lede { display: none; }
+body:has(.embed) { background: transparent; }
+body:has(.embed)::before { display: none; }

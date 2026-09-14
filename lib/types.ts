@@ -76,3 +76,36 @@ export interface RaffleEntry {
   homework?: string
   note?: string
 }
+
+/**
+ * A collection offering allocation to communities.
+ *
+ * The other side of the board. A community runs a board for its holders; a
+ * project with a mint coming needs those communities and usually finds them by
+ * DMing one founder at a time. This is that, written down once: what you are,
+ * when you mint, and how many spots you can give.
+ *
+ * `status` is the whole safety model. Anybody can submit; nothing is public
+ * until an operator approves it, because an open form that publishes straight
+ * to a directory is a spam surface with a project's name on it.
+ */
+export interface Partner {
+  id: string
+  name: string
+  /** X handle without the @. */
+  handle: string
+  chain: string
+  supply: number | null
+  /** ISO, or null when the project has not announced one. */
+  mintAt: string | null
+  /** What they are offering, in their own words: "50 GTD, 100 FCFS". */
+  offer: string
+  /** What a community's holders must do to claim it. */
+  requirements?: string
+  url?: string
+  /** How a community reaches them. Shown only once approved. */
+  contact?: string
+  note?: string
+  status: 'pending' | 'approved' | 'declined'
+  submittedAt: string
+}

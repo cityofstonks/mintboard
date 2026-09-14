@@ -1,5 +1,6 @@
-import type { RaffleEntry } from './types'
+import type { Partner, RaffleEntry } from './types'
 import bundled from '@/data/raffles.json'
+import bundledPartners from '@/data/partners.json'
 
 /**
  * Where raffles live at runtime.
@@ -23,7 +24,7 @@ export type StoreMode = 'github' | 'local' | 'readonly'
 const TOKEN = process.env.GITHUB_TOKEN ?? ''
 const REPO = process.env.GITHUB_REPO ?? ''          // "owner/name"
 const BRANCH = process.env.GITHUB_BRANCH ?? 'main'
-const PATH = 'data/raffles.json'
+type DataFile = 'data/raffles.json' | 'data/partners.json'
 
 export function storeMode(): StoreMode {
   if (TOKEN && REPO) return 'github'
@@ -46,27 +47,36 @@ const gh = (path: string, init?: RequestInit) => fetch(`https://api.github.com/r
  * on every page load, short enough that an admin edit shows up while the
  * person who made it is still looking at the page.
  */
-let cache: { at: number; list: RaffleEntry[] } | null = null
+const cache = new Map<string, { at: number; data: unknown }>()
 const TTL = 10_000
 
-export async function readRaffles(): Promise<RaffleEntry[]> {
-  if (storeMode() !== 'github') return bundled as RaffleEntry[]
-  if (cache && Date.now() - cache.at < TTL) return cache.list
+async function readFile<T>(path: DataFile, fallback: T): Promise<T> {
+  if (storeMode() !== 'github') return fallback
+  const hit = cache.get(path)
+  if (hit && Date.now() - hit.at < TTL) return hit.data as T
   try {
-    const r = await gh(`contents/${PATH}?ref=${encodeURIComponent(BRANCH)}`)
+    const r = await gh(`contents/${path}?ref=${encodeURIComponent(BRANCH)}`)
     if (!r.ok) throw new Error(String(r.status))
     const j = await r.json() as { content: string }
-    const list = JSON.parse(Buffer.from(j.content, 'base64').toString('utf8')) as RaffleEntry[]
-    cache = { at: Date.now(), list }
-    return list
+    const data = JSON.parse(Buffer.from(j.content, 'base64').toString('utf8')) as T
+    cache.set(path, { at: Date.now(), data })
+    return data
   } catch {
     // A GitHub outage must not empty the board. The copy built into the
     // deployment is stale, but stale is a great deal better than blank.
-    return cache?.list ?? (bundled as RaffleEntry[])
+    return (cache.get(path)?.data as T) ?? fallback
   }
 }
 
-export async function writeRaffles(list: RaffleEntry[], message: string): Promise<void> {
+export const readRaffles = () => readFile<RaffleEntry[]>('data/raffles.json', bundled as RaffleEntry[])
+export const readPartners = () => readFile<Partner[]>('data/partners.json', bundledPartners as Partner[])
+
+export const writeRaffles = (list: RaffleEntry[], message: string) =>
+  writeFile('data/raffles.json', list, message)
+export const writePartners = (list: Partner[], message: string) =>
+  writeFile('data/partners.json', list, message)
+
+async function writeFile(path: DataFile, list: unknown, message: string): Promise<void> {
   const body = JSON.stringify(list, null, 2) + '\n'
   const mode = storeMode()
 
@@ -77,18 +87,24 @@ export async function writeRaffles(list: RaffleEntry[], message: string): Promis
   }
 
   if (mode === 'local') {
-    const { writeFile } = await import('node:fs/promises')
+    const { writeFile: write } = await import('node:fs/promises')
     const { join } = await import('node:path')
-    await writeFile(join(process.cwd(), PATH), body, 'utf8')
+    // Literal paths, not join(cwd, path). A dynamic join here makes the
+    // bundler give up on tracing and pull the WHOLE project into the server
+    // output — every source file and the public folder with it.
+    const target = path === 'data/raffles.json'
+      ? join(process.cwd(), 'data', 'raffles.json')
+      : join(process.cwd(), 'data', 'partners.json')
+    await write(target, body, 'utf8')
     return
   }
 
   // Read the current sha first: GitHub refuses a blind overwrite, which is
   // the behaviour we want — two admins editing at once should collide loudly
   // rather than one silently discarding the other.
-  const head = await gh(`contents/${PATH}?ref=${encodeURIComponent(BRANCH)}`)
+  const head = await gh(`contents/${path}?ref=${encodeURIComponent(BRANCH)}`)
   const sha = head.ok ? (await head.json() as { sha: string }).sha : undefined
-  const r = await gh(`contents/${PATH}`, {
+  const r = await gh(`contents/${path}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -97,5 +113,5 @@ export async function writeRaffles(list: RaffleEntry[], message: string): Promis
     }),
   })
   if (!r.ok) throw new Error(`GitHub refused the write (${r.status}): ${(await r.text()).slice(0, 200)}`)
-  cache = { at: Date.now(), list }
+  cache.set(path, { at: Date.now(), data: list })
 }

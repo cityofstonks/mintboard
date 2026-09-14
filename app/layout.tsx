@@ -9,7 +9,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ ['--accent' as string]: config.accent }}>
+    <html lang="en" style={{
+      ['--accent' as string]: config.accent,
+      ['--accent-2' as string]: config.accent2,
+    }}>
       <body>{children}</body>
     </html>
   )

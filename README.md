@@ -172,6 +172,18 @@ backwards, which is why `/api/raffles` is never gated.
 The calendar file leaves undated mints out entirely: an event at an invented
 time looks like knowledge.
 
+## Collections offering allocation
+
+`/partners` is the other side of the board. A community runs a board for its
+holders; a project with a mint coming needs those communities and usually finds
+them by DMing one founder at a time. The directory is that, written down once.
+
+Anybody can submit at `/partners#apply`. **Nothing is public until an operator
+approves it** from `/admin` — an open form that publishes straight to a
+directory is a spam surface with somebody else's project name on it. Contact
+details never appear publicly at all; they go to the operator so a community
+can reach the project.
+
 ## The admin page
 
 `/admin` lets somebody who is not a developer add, edit and remove raffles.

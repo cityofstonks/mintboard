@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-import type { RaffleEntry, RaffleTier } from '@/lib/types'
+import type { Partner, RaffleEntry, RaffleTier } from '@/lib/types'
 
 const blank = (): RaffleEntry => ({
   id: '', project: '', closesAt: '',
@@ -24,12 +24,15 @@ export default function Admin() {
   const [draft, setDraft] = useState<RaffleEntry>(blank())
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
+  const [partners, setPartners] = useState<Partner[]>([])
 
   const load = useCallback(async () => {
     const r = await fetch('/api/admin/raffles')
     if (r.status === 401) { setAuthed(false); return }
     const d = await r.json()
     setList(d.raffles ?? []); setMode(d.mode ?? ''); setAuthed(true)
+    const pr = await fetch('/api/partners')
+    if (pr.ok) setPartners((await pr.json()).partners ?? [])
   }, [])
 
   useEffect(() => { void load() }, [load])
@@ -65,6 +68,18 @@ export default function Admin() {
     const d = await r.json()
     setBusy(false)
     setMsg(r.ok ? 'Removed.' : (d.error ?? 'Could not remove.'))
+    void load()
+  }
+
+  async function decide(id: string, status: Partner['status']) {
+    setBusy(true)
+    const r = await fetch('/api/partners', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    })
+    const d = await r.json()
+    setBusy(false)
+    setMsg(r.ok ? `Marked ${status}.` : (d.error ?? 'Could not update.'))
     void load()
   }
 
@@ -131,6 +146,43 @@ export default function Admin() {
             </article>
           )
         })}
+      </div>
+
+      <p className="heading">
+        Collections offering allocation
+        {partners.some(p => p.status === 'pending') &&
+          <span style={{ color: 'var(--warn)' }}> · {partners.filter(p => p.status === 'pending').length} waiting on you</span>}
+      </p>
+      {partners.length === 0 && <div className="empty">Nobody has applied yet. The form is at <a href="/partners#apply">/partners</a>.</div>}
+      <div className="cards">
+        {[...partners].sort((a, b) =>
+          Number(b.status === 'pending') - Number(a.status === 'pending')
+          || b.submittedAt.localeCompare(a.submittedAt)).map(p => (
+          <article className="card" key={p.id}>
+            <div className="code">
+              {p.status === 'pending' ? 'WAITING' : p.status.toUpperCase()} · {p.chain.toUpperCase()}
+              {p.supply ? ` · ${p.supply.toLocaleString()}` : ''}
+            </div>
+            <h3>{p.name}</h3>
+            <div className="meta"><b>{p.offer}</b></div>
+            <div className="sub">
+              <a href={`https://x.com/${p.handle}`} target="_blank" rel="noopener">@{p.handle}</a>
+              {p.mintAt ? ` · ${new Date(p.mintAt).toLocaleString()}` : ' · date TBA'}
+            </div>
+            {p.requirements && <div className="sub"><b>Asks for:</b> {p.requirements}</div>}
+            {p.contact && <div className="sub"><b>Contact:</b> {p.contact}</div>}
+            {p.note && <div className="sub">{p.note}</div>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 'auto', flexWrap: 'wrap' }}>
+              {p.status !== 'approved' && <button type="button" disabled={busy} onClick={() => decide(p.id, 'approved')}>Approve</button>}
+              {p.status !== 'declined' && <button type="button" className="ghost" disabled={busy} onClick={() => decide(p.id, 'declined')}>Decline</button>}
+            </div>
+            {p.status === 'pending' && (
+              <p className="note" style={{ margin: 0 }}>
+                Open their account before approving. Everything here is their own unverified claim.
+              </p>
+            )}
+          </article>
+        ))}
       </div>
 
       <p className="heading">{draft.id ? `Editing ${draft.project || draft.id}` : 'Add a raffle'}</p>
