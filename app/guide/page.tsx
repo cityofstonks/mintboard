@@ -73,7 +73,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 export default function Guide() {
   return (
     <main className="wrap" style={{ maxWidth: 880 }}>
-      <p className="note"><a href="/">← back to the board</a></p>
+      <p className="note"><a href="/board">← back to the board</a></p>
       <h1>THE <span>GUIDE</span></h1>
       <p className="lede" style={{ marginBottom: 28 }}>
         How to put a mint board in front of your own holders — on your own site, under your own
@@ -229,7 +229,7 @@ export default function Guide() {
         Mintboard is MIT licensed. Rename it, restyle it, make it yours — and if you break
         something, it is a single repository you can read end to end.
       </p>
-      <p className="note"><a href="/">← back to the board</a> · <a href={config.discordInvite}>community</a></p>
+      <p className="note"><a href="/board">← back to the board</a> · <a href={config.discordInvite}>community</a></p>
     </main>
   )
 }

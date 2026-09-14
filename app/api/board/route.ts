@@ -3,10 +3,16 @@ import config from '@/mintboard.config'
 import { boardFor } from '@/lib/board'
 import { gateBalance, isAddress } from '@/lib/chain'
 import { liveRaffles } from '@/lib/raffles'
+import { callerOf, tooMany } from '@/lib/limit'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
+  // Each call fans out to one balanceOf per configured collection, so an
+  // unthrottled loop here spends somebody else's RPC quota, not ours.
+  if (tooMany(`board:${callerOf(req)}`, 60, 60_000)) {
+    return NextResponse.json({ error: 'Slow down a moment and try again.' }, { status: 429 })
+  }
   const address = (new URL(req.url).searchParams.get('address') ?? '').trim()
   if (!isAddress(address)) {
     return NextResponse.json({ error: 'need a wallet address' }, { status: 400 })

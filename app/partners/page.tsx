@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function Partners() {
   return (
     <main className="wrap">
-      <p className="note"><a href="/">← back to the board</a></p>
+      <p className="note"><a href="/board">← back to the board</a></p>
       <h1>OFFERING <span>ALLOCATION</span></h1>
       <p className="lede">
         Collections with a mint coming that want communities to hand their spots out. Every one has

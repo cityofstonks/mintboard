@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { COOKIE, adminEnabled, validToken } from '@/lib/auth'
 import { readPartners, writePartners, storeMode } from '@/lib/store'
 import type { Partner } from '@/lib/types'
+import { callerOf, tooMany } from '@/lib/limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +30,11 @@ const str = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max)
 
 /** Anybody may submit. Nothing they submit is visible until it is approved. */
 export async function POST(req: Request) {
+  // Every accepted submission is a commit, so this one needs a brake.
+  if (tooMany(`partner:${callerOf(req)}`, 3, 60 * 60_000)) {
+    return NextResponse.json(
+      { error: 'That is a few too many submissions in an hour. Try again later.' }, { status: 429 })
+  }
   const body = await req.json().catch(() => null) as Record<string, unknown> | null
   if (!body) return NextResponse.json({ error: 'Could not read that.' }, { status: 400 })
 
