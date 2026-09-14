@@ -136,12 +136,26 @@ page that will not count anybody.
 ## Embedding it in your own site
 
 ```html
-<iframe src="https://your-board.vercel.app/embed"
+<iframe src="https://your-board.vercel.app/embed" id="mintboard"
         style="width:100%;height:900px;border:0" loading="lazy"></iframe>
+
+<script>
+  // Optional. The board reports its own height, so there is no scrollbar and
+  // no slab of dead space under it.
+  addEventListener('message', function (e) {
+    if (e.data && e.data.type === 'mintboard:height') {
+      document.getElementById('mintboard').style.height = e.data.height + 'px'
+    }
+  })
+</script>
 ```
 
 `/embed` drops the page heading and padding and is the only route that allows
-framing. Everything else stays `DENY`.
+framing. Everything else stays `DENY`. A host that ignores the height message
+loses nothing — the board just stays at whatever height you set.
+
+**There is a full walkthrough at `/guide` on any running board**, written for
+the person setting it up rather than for a developer reading source.
 
 ## API
 
