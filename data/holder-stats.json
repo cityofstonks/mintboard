@@ -4,116 +4,129 @@
     "collection": "CannaCats",
     "minted": 16,
     "held": 8,
+    "boughtMore": 5,
     "keysNow": 68,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "pixelord",
     "collection": "Pixelord",
     "minted": 33,
     "held": 14,
+    "boughtMore": 5,
     "keysNow": 75,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "rhmachines",
     "collection": "RH Machines (BTC Ordinals)",
     "minted": 85,
     "held": 33,
+    "boughtMore": 2,
     "keysNow": 293,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "birbs",
     "collection": "BIRBS",
     "minted": 13,
     "held": 5,
+    "boughtMore": 0,
     "keysNow": 8,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "ccff00",
     "collection": "CCFF00",
     "minted": 58,
     "held": 16,
+    "boughtMore": 4,
     "keysNow": 76,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "zaxweb3",
     "collection": "Zax Web3",
     "minted": 29,
     "held": 6,
+    "boughtMore": 0,
     "keysNow": 15,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "legacydao",
     "collection": "Legacy DAO",
     "minted": 47,
     "held": 9,
+    "boughtMore": 1,
     "keysNow": 22,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "shreddertegg",
     "collection": "Shredder x Tegg",
     "minted": 22,
     "held": 3,
+    "boughtMore": 0,
     "keysNow": 7,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "lscabal",
     "collection": "LsCabal",
     "minted": 25,
     "held": 3,
+    "boughtMore": 0,
     "keysNow": 5,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "cloudquest",
     "collection": "Cloud Quest",
     "minted": 17,
     "held": 2,
+    "boughtMore": 0,
     "keysNow": 6,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "akagami",
     "collection": "Akagami / Sailors of WEB3",
     "minted": 12,
     "held": 1,
+    "boughtMore": 0,
     "keysNow": 1,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "robinrabbits",
     "collection": "Robin Rabbits",
     "minted": 53,
     "held": 4,
+    "boughtMore": 1,
     "keysNow": 19,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   },
   {
     "handle": "cookfi",
     "collection": "CookFi",
     "minted": 13,
     "held": 0,
+    "boughtMore": 0,
     "keysNow": 0,
-    "scannedAt": "2026-09-14T22:17:50.420Z",
-    "atBlock": 63154283
+    "scannedAt": "2026-09-14T22:26:49.850Z",
+    "atBlock": 63160525
   }
 ]

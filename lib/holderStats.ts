@@ -14,6 +14,7 @@ export function shares(s: HolderStats) {
   return {
     held: Math.round((s.held / n) * 100),
     sold: Math.round(((s.minted - s.held) / n) * 100),
+    boughtMore: Math.round((s.boughtMore / n) * 100),
   }
 }
 

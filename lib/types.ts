@@ -153,9 +153,17 @@ export interface HolderStats {
   /** Of those, how many still hold one they minted. The retention question. */
   held: number
   /**
+   * Wallets now holding MORE than they were handed — they went and bought.
+   *
+   * Not a slice of held/sold and deliberately not added to them: a wallet can
+   * sell the one it minted and still buy three on secondary, so this overlaps
+   * both. It is its own measure and the card shows it as one.
+   */
+  boughtMore: number
+  /**
    * Tokens sitting in this community's wallets now, secondary buys included.
-   * Larger than `minted` means they kept buying after the mint, which is the
-   * strongest signal a partner gives you.
+   * Read it against `boughtMore`: a big number from a couple of wallets is one
+   * collector, not a room that believes.
    */
   keysNow: number
   /** ISO. Stats age badly and a card should be able to say how old they are. */
