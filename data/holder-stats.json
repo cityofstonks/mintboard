@@ -12,5 +12,19 @@
     "scannedAt": "2026-09-14T05:59:55.954Z",
     "fromBlock": 12500546,
     "toBlock": 62572964
+  },
+  {
+    "handle": "ccff00",
+    "collection": "CCFF00",
+    "chain": "robinhood",
+    "contract": "0x505a22ffed8d37ebe580ffd98d2cdb0021189146",
+    "windowHours": 24,
+    "minters": 1954,
+    "held": 1242,
+    "flipped": 591,
+    "accumulated": 121,
+    "scannedAt": "2026-09-14T11:28:19.096Z",
+    "fromBlock": 11485748,
+    "toBlock": 62764720
   }
 ]
