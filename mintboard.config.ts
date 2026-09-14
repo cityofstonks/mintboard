@@ -45,8 +45,8 @@ const config: BoardConfig = {
   tagline: 'The mints this wallet can actually enter, and when.',
   // Pick any two. Everything else — buttons, the aurora behind the glass, the
   // highlighted phase — is mixed from them, so one change reskins the tool.
-  accent: '#6366f1',
-  accent2: '#22d3ee',
+  accent: '#CCFF00',
+  accent2: '#6EE7B7',
   discordInvite: 'https://discord.gg/your-invite',
 
   gate: null,
