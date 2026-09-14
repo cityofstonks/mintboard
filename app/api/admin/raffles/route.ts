@@ -23,8 +23,16 @@ export async function GET() {
 function clean(r: Partial<RaffleEntry>): RaffleEntry | string {
   const project = String(r.project ?? '').trim()
   if (!project) return 'A raffle needs a project name.'
-  const closesAt = String(r.closesAt ?? '').trim()
-  if (!Number.isFinite(Date.parse(closesAt))) return 'Closing time is not a date I can read.'
+  const kind: 'raffle' | 'claim' = r.kind === 'claim' ? 'claim' : 'raffle'
+  // Blank is allowed and means open-ended. Only a value that was typed and is
+  // unreadable is an error — silently dropping a mistyped date would publish
+  // an opportunity as never-closing when somebody meant it to close tonight.
+  const typed = String(r.closesAt ?? '').trim()
+  if (typed && !Number.isFinite(Date.parse(typed))) return 'Closing time is not a date I can read.'
+  const closesAt = typed ? new Date(typed).toISOString() : null
+  if (!closesAt && kind === 'raffle') {
+    return 'A raffle needs a closing time — that is when you draw. Set it to a claim if it just runs until it fills.'
+  }
   const tiers = (r.tiers ?? []).map(t => ({
     label: String(t.label ?? '').trim() || 'Spots',
     // null, not 0: an uncapped tier is a blanket allowlist, and printing a
@@ -36,8 +44,9 @@ function clean(r: Partial<RaffleEntry>): RaffleEntry | string {
   if (!tiers.length) return 'A raffle needs at least one tier.'
   return {
     id: String(r.id ?? '').trim() || `raffle-${Date.now().toString(36)}`,
-    project, closesAt: new Date(closesAt).toISOString(), tiers,
+    project, kind, closesAt, tiers,
     enterUrl: String(r.enterUrl ?? '').trim() || undefined,
+    url: String(r.url ?? '').trim() || undefined,
     homework: String(r.homework ?? '').trim() || undefined,
     note: String(r.note ?? '').trim() || undefined,
   }

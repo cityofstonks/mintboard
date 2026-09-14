@@ -69,10 +69,22 @@ export interface RaffleTier {
 export interface RaffleEntry {
   id: string
   project: string
-  closesAt: string
+  /**
+   * A draw shuts and picks names; a claim just stays open until it fills.
+   * They need different words on the card, because telling somebody to "enter"
+   * a thing they can simply take costs them the spot.
+   */
+  kind?: 'raffle' | 'claim'
+  /**
+   * null for an opportunity with no deadline. A claim that runs until supply
+   * runs out has no honest countdown, and inventing one expires a live door.
+   */
+  closesAt: string | null
   tiers: RaffleTier[]
   /** Straight to the announcement, so entering is one tap and not a hunt. */
   enterUrl?: string
+  /** A claim's door is on the project's own site, not in our announcement. */
+  url?: string
   homework?: string
   note?: string
 }

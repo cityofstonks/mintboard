@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { BoardRow, HeldAsset, RaffleEntry } from '@/lib/types'
 
 interface Payload {
@@ -42,10 +42,6 @@ export default function Board({ embed = false }: { embed?: boolean }) {
   const [busy, setBusy] = useState(false)
   // One clock for every countdown on the page, rather than a timer per card.
   const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(t)
-  }, [])
 
   const check = useCallback(async (a: string) => {
     if (!/^0x[0-9a-fA-F]{40}$/.test(a.trim())) {
@@ -77,6 +73,40 @@ export default function Board({ embed = false }: { embed?: boolean }) {
   const rows = data?.rows ?? []
   const dated = rows.filter(r => r.when).length
 
+  /*
+   * Tick only as fast as the nearest deadline actually reads.
+   *
+   * Every countdown on this page renders through one `now`, so a tick
+   * re-renders every card. At a fixed 1s that is a full reconcile per second
+   * forever — including when the soonest mint is four days out and the string
+   * says "4d 2h", which changes once an hour. Seconds are only ever on screen
+   * inside the last hour, so that is the only time a 1s tick buys anything.
+   */
+  const soonest = useMemo(() => {
+    const times = [
+      ...rows.map(r => r.when),
+      ...shown.map(r => r.closesAt),
+    ].map(t => (t ? Date.parse(t) : NaN)).filter(t => Number.isFinite(t) && t > now)
+    return times.length ? Math.min(...times) : null
+    // `now` is deliberately excluded: re-deriving this every tick is the cost
+    // we are removing. Deadlines only change when the payload does.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, shown])
+
+  useEffect(() => {
+    if (soonest === null) return              // nothing counts down: no timer at all
+    const within = soonest - Date.now() < 3600_000
+    const every = within ? 1000 : 30_000      // 30s keeps "2h 07m" honest to the minute
+    let t: ReturnType<typeof setInterval>
+    const run = () => { setNow(Date.now()); t = setInterval(() => setNow(Date.now()), every) }
+    const stop = () => clearInterval(t)
+    // A hidden tab is throttled anyway; stopping outright also spares the battery.
+    const onVis = () => { stop(); if (!document.hidden) run() }
+    if (!document.hidden) run()
+    document.addEventListener('visibilitychange', onVis)
+    return () => { stop(); document.removeEventListener('visibilitychange', onVis) }
+  }, [soonest])
+
   return (
     <div className={embed ? 'embed' : ''}>
       <div className="wrap">
@@ -89,14 +119,24 @@ export default function Board({ embed = false }: { embed?: boolean }) {
 
         {shown.length > 0 && (
           <section className="rail r-raffle">
-            <h2><i />Raffles open now <b>{shown.length}</b></h2>
+            <h2><i />Opportunities open now <b>{shown.length}</b></h2>
             <div className="cards">
-              {shown.map(r => (
+              {shown.map(r => {
+                const claim = r.kind === 'claim'
+                return (
                 <article className="card raffle" key={r.id}>
-                  <div><span className="code">RAFFLE</span></div>
+                  <div>
+                    <span className="code">{claim ? 'CLAIM' : 'RAFFLE'}</span>{' '}
+                    <span className="tier">{claim ? 'NO DRAW' : 'CLOSES SOON'}</span>
+                  </div>
                   <h3>{r.project}</h3>
-                  <div><span className="big">{countdown(r.closesAt, now) ?? fmt(r.closesAt)}</span>{' '}
-                    <span className="at">entry closes</span></div>
+                  <div>
+                    {r.closesAt
+                      ? <><span className="big">{countdown(r.closesAt, now) ?? fmt(r.closesAt)}</span>{' '}
+                          <span className="at">{claim ? 'closes' : 'entry closes'}</span></>
+                      : <><span className="big">OPEN NOW</span>{' '}
+                          <span className="at">until it fills</span></>}
+                  </div>
                   <div className="tiers">
                     {r.tiers.map((t, i) => (
                       <span key={i}>
@@ -107,9 +147,14 @@ export default function Board({ embed = false }: { embed?: boolean }) {
                   </div>
                   {r.homework && <div className="meta">{r.homework}</div>}
                   {r.note && <span className="sub">{r.note}</span>}
-                  {r.enterUrl && <a className="enter" href={r.enterUrl} target="_blank" rel="noopener">Enter →</a>}
+                  {(r.url || r.enterUrl) && (
+                    <a className="enter" href={r.url || r.enterUrl} target="_blank" rel="noopener">
+                      {claim ? 'Claim your spot →' : 'Enter →'}
+                    </a>
+                  )}
                 </article>
-              ))}
+                )
+              })}
             </div>
           </section>
         )}

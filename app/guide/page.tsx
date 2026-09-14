@@ -225,7 +225,7 @@ export default function Guide() {
           <thead>
             <tr>
               {['Route', 'Gated', 'Returns'].map(h => (
-                <th key={h} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid var(--border)', color: 'var(--faint)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase' }}>{h}</th>
+                <th key={h} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid var(--edge)', color: 'var(--faint)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -236,9 +236,9 @@ export default function Guide() {
               ['GET /api/board/ics?address=0x…', 'same as the board', 'a calendar file, one event per dated mint'],
             ].map(([a, b, c]) => (
               <tr key={a}>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', color: 'var(--accent)', whiteSpace: 'nowrap' }}><code>{a}</code></td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>{b}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>{c}</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--edge)', color: 'var(--accent)', whiteSpace: 'nowrap' }}><code>{a}</code></td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--edge)', color: 'var(--muted)' }}>{b}</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--edge)', color: 'var(--muted)' }}>{c}</td>
               </tr>
             ))}
           </tbody>

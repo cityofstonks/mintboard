@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Partner, RaffleEntry, RaffleTier } from '@/lib/types'
 
 const blank = (): RaffleEntry => ({
-  id: '', project: '', closesAt: '',
+  id: '', project: '', kind: 'raffle', closesAt: null,
   tiers: [{ label: 'Guaranteed', count: 10, who: 'holders', drawn: true }],
-  enterUrl: '', homework: '', note: '',
+  enterUrl: '', url: '', homework: '', note: '',
 })
 
 /** datetime-local wants local wall time; everything stored is ISO UTC. */
@@ -127,19 +127,26 @@ export default function Admin() {
       {list.length === 0 && <div className="empty">No raffles yet. Add one below.</div>}
       <div className="cards">
         {list.map(r => {
-          const open = Date.parse(r.closesAt) > Date.now()
+          // No deadline means open-ended, which is open — not closed.
+          const t = r.closesAt ? Date.parse(r.closesAt) : NaN
+          const open = Number.isFinite(t) ? t > Date.now() : true
           return (
             <article className="card" key={r.id}>
-              <div><span className="code">{open ? 'OPEN' : 'CLOSED'}</span></div>
+              <div>
+                <span className="code">{open ? 'OPEN' : 'CLOSED'}</span>{' '}
+                <span className="tier">{r.kind === 'claim' ? 'CLAIM' : 'RAFFLE'}</span>
+              </div>
               <h3>{r.project}</h3>
-              <div className="meta">closes {new Date(r.closesAt).toLocaleString()}</div>
+              <div className="meta">
+                {r.closesAt ? `closes ${new Date(r.closesAt).toLocaleString()}` : 'no deadline — open until it fills'}
+              </div>
               <div className="tiers">
                 {r.tiers.map((t, i) => (
                   <span key={i}><b>{t.count === null ? '' : `${t.count} `}{t.label}</b> · {t.who} {t.drawn ? '(drawn)' : '— not a draw'}</span>
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
-                <button type="button" onClick={() => setDraft({ ...r, closesAt: toLocalInput(r.closesAt) })}>Edit</button>
+                <button type="button" onClick={() => setDraft({ ...r, closesAt: r.closesAt ? toLocalInput(r.closesAt) : '' })}>Edit</button>
                 <button type="button" onClick={() => remove(r.id, r.project)} disabled={busy}
                   style={{ background: 'transparent', color: 'var(--warn)', border: '1px solid var(--warn)' }}>Remove</button>
               </div>
@@ -188,14 +195,23 @@ export default function Admin() {
       <p className="heading">{draft.id ? `Editing ${draft.project || draft.id}` : 'Add a raffle'}</p>
       <form onSubmit={save} style={{ display: 'grid', gap: 10, maxWidth: 620 }}>
         <label>Project<br /><input value={draft.project} onChange={e => setDraft(s => ({ ...s, project: e.target.value }))} placeholder="The Furnace" style={{ width: '100%' }} /></label>
-        <label>Entry closes<br /><input type="datetime-local" value={draft.closesAt} onChange={e => setDraft(s => ({ ...s, closesAt: e.target.value }))} style={{ width: '100%' }} /></label>
+        <label>Kind<br />
+          <select value={draft.kind ?? 'raffle'} onChange={e => setDraft(s => ({ ...s, kind: e.target.value as 'raffle' | 'claim' }))}>
+            <option value="raffle">Raffle — you draw names when it closes</option>
+            <option value="claim">Claim — anyone who qualifies just takes a spot</option>
+          </select>
+        </label>
+        <label>Entry closes <span className="note">— leave blank if it runs until it fills</span><br />
+          <input type="datetime-local" value={draft.closesAt ?? ''} onChange={e => setDraft(s => ({ ...s, closesAt: e.target.value || null }))} style={{ width: '100%' }} /></label>
+        <label>Link straight to the claim page <span className="note">— for a claim, instead of your announcement</span><br />
+          <input value={draft.url ?? ''} onChange={e => setDraft(s => ({ ...s, url: e.target.value }))} placeholder="https://theproject.xyz/claim" style={{ width: '100%' }} /></label>
         <label>Link people click to enter<br /><input value={draft.enterUrl ?? ''} onChange={e => setDraft(s => ({ ...s, enterUrl: e.target.value }))} placeholder="https://discord.com/channels/…" style={{ width: '100%' }} /></label>
         <label>What entrants must do<br /><input value={draft.homework ?? ''} onChange={e => setDraft(s => ({ ...s, homework: e.target.value }))} placeholder="Follow, repost and comment — then file the link" style={{ width: '100%' }} /></label>
         <label>Note<br /><input value={draft.note ?? ''} onChange={e => setDraft(s => ({ ...s, note: e.target.value }))} placeholder="3,232 on Robinhood Chain. Price and date TBA." style={{ width: '100%' }} /></label>
 
         <p className="heading" style={{ margin: '6px 0 0' }}>Tiers</p>
         {draft.tiers.map((t, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 1fr auto auto', gap: 6, alignItems: 'center' }}>
+          <div key={i} className="tier-row">
             <input value={t.label} onChange={e => setTier(i, { label: e.target.value })} placeholder="Guaranteed" />
             <input value={t.count ?? ''} onChange={e => setTier(i, { count: e.target.value === '' ? null : Number(e.target.value) })} placeholder="all" title="Leave blank for an uncapped tier" />
             <input value={t.who} onChange={e => setTier(i, { who: e.target.value })} placeholder="Key Masters" />
@@ -203,7 +219,7 @@ export default function Admin() {
               <input type="checkbox" checked={t.drawn} onChange={e => setTier(i, { drawn: e.target.checked })} /> drawn
             </label>
             <button type="button" onClick={() => setDraft(s => ({ ...s, tiers: s.tiers.filter((_, n) => n !== i) }))}
-              style={{ background: 'transparent', color: 'var(--faint)', border: '1px solid var(--border)' }}>×</button>
+              style={{ background: 'transparent', color: 'var(--faint)', border: '1px solid var(--edge)' }}>×</button>
           </div>
         ))}
         <p className="note">Leave the count blank for a tier nobody is drawn for — a whitelist everyone who qualifies gets.</p>
@@ -212,7 +228,7 @@ export default function Admin() {
             style={{ background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)' }}>Add tier</button>
           <button disabled={busy || mode === 'readonly'}>{busy ? 'Saving…' : draft.id ? 'Save changes' : 'Add raffle'}</button>
           {draft.id !== '' && <button type="button" onClick={() => setDraft(blank())}
-            style={{ background: 'transparent', color: 'var(--faint)', border: '1px solid var(--border)' }}>Cancel</button>}
+            style={{ background: 'transparent', color: 'var(--faint)', border: '1px solid var(--edge)' }}>Cancel</button>}
         </div>
       </form>
 

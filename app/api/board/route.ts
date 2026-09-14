@@ -7,6 +7,12 @@ import { callerOf, tooMany } from '@/lib/limit'
 
 export const dynamic = 'force-dynamic'
 
+/*
+ * Per-wallet, so it must never be stored by a shared cache: two holders behind
+ * one CDN node would otherwise read each other's board.
+ */
+const PRIVATE = { 'cache-control': 'private, no-store' }
+
 export async function GET(req: Request) {
   // Each call fans out to one balanceOf per configured collection, so an
   // unthrottled loop here spends somebody else's RPC quota, not ours.
@@ -33,12 +39,14 @@ export async function GET(req: Request) {
           ? `${config.gate.min} or more.` : `You hold ${held} of the ${config.gate.min} needed.`}`,
         // Locked out of the board is not locked out of what is running.
         raffles: await liveRaffles(),
-      }, { status: 403 })
+      }, { status: 403, headers: PRIVATE })
     }
     const board = await boardFor(address)
-    return NextResponse.json({ locked: false, keys: held, ...board, raffles: await liveRaffles() })
+    return NextResponse.json({ locked: false, keys: held, ...board, raffles: await liveRaffles() },
+      { headers: PRIVATE })
   }
 
   const board = await boardFor(address)
-  return NextResponse.json({ locked: false, keys: null, ...board, raffles: await liveRaffles() })
+  return NextResponse.json({ locked: false, keys: null, ...board, raffles: await liveRaffles() },
+    { headers: PRIVATE })
 }

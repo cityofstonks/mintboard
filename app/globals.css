@@ -60,6 +60,7 @@ html { color-scheme: dark; }
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--ink);
   background: var(--bg);
   font: 15px/1.65 var(--sans);
@@ -106,8 +107,10 @@ h2 { font-size: 20px; letter-spacing: -.02em; font-weight: 620; margin: 0 0 8px;
   border: 1px solid var(--edge);
   border-radius: var(--r);
   box-shadow: var(--shadow);
+  /* Unprefixed only. Writing -webkit- by hand makes the minifier dedupe the
+     pair down to the prefixed one, and Chrome 152+ dropped that alias — which
+     silently removed the blur from the two containers that carry the design. */
   backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 /* The lit top edge. This one hairline is what sells glass over flat. */
 .pane::after {
@@ -147,7 +150,7 @@ button.quiet { background: none; color: var(--faint); box-shadow: none; padding:
 button.quiet:hover { color: var(--ink); }
 
 .ask { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 8px; }
-.ask input { flex: 1; min-width: 280px; }
+.ask input { flex: 1; min-width: min(280px, 100%); }
 
 /* ── rails ────────────────────────────────────────────────────────────── */
 .rail { margin: 0 0 10px; }
@@ -165,13 +168,16 @@ button.quiet:hover { color: var(--ink); }
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
 @media (prefers-reduced-motion: reduce) { .rail.r-live > h2 i { animation: none } }
 
-.cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); align-items: stretch; }
+/* min() so the track can never be wider than the container it sits in. At
+   320px the old minmax(300px,1fr) forced a 300px card into a 280px grid, and
+   the card ate the right gutter and sat flush against the screen edge. */
+.cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); align-items: stretch; }
 
 .card {
   position: relative; padding: 18px; display: flex; flex-direction: column; gap: 10px;
   background: var(--glass); border: 1px solid var(--edge); border-radius: var(--r);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   transition: transform .16s, box-shadow .16s;
 }
 .card::after {
@@ -249,3 +255,29 @@ td { padding: 12px 14px; border-bottom: 1px solid var(--edge); color: var(--mute
    the glass and the lime are built for it and wash out on anything pale. */
 body:has(.embed) { background: var(--bg); }
 
+
+/* ── phones ───────────────────────────────────────────────────────────────
+   The grid and type already reflow on their own; what a small screen needs
+   is less gutter spent on padding and controls big enough to hit. */
+@media (max-width: 560px) {
+  .wrap { padding: 26px 14px 72px; }
+  .card { padding: 16px; }
+  .locked { padding: 20px; }
+  .empty { padding: 22px; }
+  .rail > h2 { margin: 26px 0 12px; }
+  /* 44px is the smallest target a thumb hits reliably. */
+  button, .btn, .enter { padding: 13px 18px; }
+  .ask { gap: 8px; }
+  .ask button { width: 100%; }
+}
+
+/* The raffle tier editor. Five rigid columns squeezed the two text fields to
+   about 50px on a phone — narrower than the word "Guaranteed" — so below the
+   breakpoint each field takes a full row and the two controls share one. */
+.tier-row { display: grid; grid-template-columns: 1fr 90px 1fr auto auto; gap: 6px; align-items: center; }
+@media (max-width: 560px) {
+  .tier-row { grid-template-columns: 1fr auto auto; row-gap: 8px; }
+  .tier-row > input:nth-child(1) { grid-column: 1 / -1; }
+  .tier-row > input:nth-child(2) { grid-column: 1 / 2; }
+  .tier-row > input:nth-child(3) { grid-column: 1 / -1; }
+}
