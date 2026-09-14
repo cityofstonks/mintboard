@@ -181,7 +181,27 @@ export default function Guide() {
         </p>
       </Step>
 
-      <Step n={7} title="What your holders get">
+      <Step n={7} title="See what a partner's holders actually did">
+        <p>
+          Before you spend your community&apos;s attention on a project, it is worth knowing what
+          happened the last time somebody did. Run the scanner against their contract and the
+          answer goes on their card in <code>/partners</code>:
+        </p>
+        <Snippet code={'node scripts/holder-stats.mjs --handle TheirHandle \\\n  --chain ethereum --contract 0x… --window 24 --write'} label="terminal" />
+        <p>
+          Three numbers — <strong>held</strong>, <strong>sold</strong>, <strong>bought more</strong> —
+          as shares of the wallets that minted, so one whale minting fifty counts once rather than
+          fifty times.
+        </p>
+        <p>
+          <strong>Moving a token to your own cold wallet is not a flip.</strong> It looks identical
+          to a sale in the logs; what separates them is that moving your own token is a direct call
+          to the collection, while a sale goes through a marketplace. Getting that wrong would
+          label the most careful holders in a community as flippers.
+        </p>
+      </Step>
+
+      <Step n={8} title="What your holders get">
         <p>
           They paste an address — no wallet connection, nothing signed, nothing stored — and see
           the mints they hold a spot on, which tier, <strong>why</strong> they qualify, and when

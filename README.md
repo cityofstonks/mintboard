@@ -184,6 +184,45 @@ directory is a spam surface with somebody else's project name on it. Contact
 details never appear publicly at all; they go to the operator so a community
 can reach the project.
 
+## Holder quality on every partner
+
+`scripts/holder-stats.mjs` walks a collection's Transfer logs and answers three
+questions about the wallets that minted it:
+
+```bash
+node scripts/holder-stats.mjs --handle AstralSentinels \
+  --chain ethereum --contract 0x… --window 24 --write
+```
+
+```
+held         612  58%
+flipped      301  29%   (sold; 244 inside 24h)
+accumulated  138  13%
+```
+
+It appears as a bar on that project's card in `/partners`, so a community can
+see what a partner's last drop actually did before spending its holders'
+attention on the next one.
+
+**Three things make the number trustworthy, and each was a bug first.**
+
+*Shares of minters, not of supply.* One whale minting fifty counts once.
+Counting by token lets a single wallet's behaviour stand in for a community's.
+
+*A self-custody move is not a flip.* Selling and moving a token to your own cold
+wallet look identical in a Transfer log — both are `from → to`. What separates
+them is the transaction they sit in: moving your own token is a direct call to
+the NFT contract, so the transaction's `to` **is** the collection. A marketplace
+sale goes through the marketplace. Counting the first as a flip would libel the
+most careful holders in a community.
+
+*Zero minters is a failure, not a statistic.* If the scan starts above the
+mints, the script exits rather than writing a row of confident zeros.
+
+The contract's first block is found automatically. Where the node keeps no
+historical state — most public endpoints — it falls back to walking the logs
+back to the first mint, which is slow; pass `--from-block` to skip that.
+
 ## The admin page
 
 `/admin` lets somebody who is not a developer add, edit and remove raffles.

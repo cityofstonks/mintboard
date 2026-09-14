@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Directory from './Directory'
 import Apply from './Apply'
+import Quality from './Quality'
+import { allStats } from '@/lib/holderStats'
 
 export const metadata: Metadata = {
   title: 'Collections — Mintboard',
@@ -19,6 +21,26 @@ export default function Partners() {
 
       <p className="heading">Open right now</p>
       <Directory />
+
+      {allStats().length > 0 && (
+        <>
+          <p className="heading">What their holders did last time</p>
+          <p className="lede" style={{ marginBottom: 16 }}>
+            Read off each collection&apos;s own Transfer logs: of the wallets that minted, how many
+            kept it, sold it, or went on to buy more. Shares of minters rather than of supply, so
+            one whale minting fifty counts once.
+          </p>
+          <div className="cards">
+            {allStats().map(s => (
+              <article className="card" key={s.handle}>
+                <div className="code">{s.chain.toUpperCase()}</div>
+                <h3>{s.collection}</h3>
+                <Quality s={s} />
+              </article>
+            ))}
+          </div>
+        </>
+      )}
 
       <p className="heading" id="apply">List your collection</p>
       <p className="lede" style={{ marginBottom: 16 }}>

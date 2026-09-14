@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import type { Partner } from '@/lib/types'
+import type { HolderStats, Partner } from '@/lib/types'
+import Quality from './Quality'
 
 const fmt = (iso: string | null) => {
   if (!iso) return 'Date TBA'
@@ -11,8 +12,14 @@ const fmt = (iso: string | null) => {
 
 export default function Directory() {
   const [list, setList] = useState<Partner[] | null>(null)
+  const [stats, setStats] = useState<Record<string, HolderStats>>({})
   useEffect(() => {
     fetch('/api/partners').then(r => r.json()).then(d => setList(d.partners ?? [])).catch(() => setList([]))
+    fetch('/api/holder-stats').then(r => r.json()).then(d => {
+      const by: Record<string, HolderStats> = {}
+      for (const s of d.stats ?? []) by[s.handle.toLowerCase()] = s
+      setStats(by)
+    }).catch(() => {})
   }, [])
 
   if (list === null) return <div className="empty">Loading…</div>
@@ -39,6 +46,7 @@ export default function Directory() {
           <div className="meta">{fmt(p.mintAt)}</div>
           {p.requirements && <div className="sub"><b>Asks for:</b> {p.requirements}</div>}
           {p.note && <div className="sub">{p.note}</div>}
+          {stats[p.handle.toLowerCase()] && <Quality s={stats[p.handle.toLowerCase()]} />}
           <a className="enter" href={`https://x.com/${p.handle}`} target="_blank" rel="noopener">
             @{p.handle} →
           </a>

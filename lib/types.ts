@@ -109,3 +109,36 @@ export interface Partner {
   status: 'pending' | 'approved' | 'declined'
   submittedAt: string
 }
+
+/**
+ * How a collection's minters behaved afterwards.
+ *
+ * Three questions about the same cohort — the wallets that minted — asked at a
+ * fixed window after each token was minted:
+ *
+ *   held        still holds what it minted
+ *   flipped     sold within the window
+ *   accumulated ended up holding MORE than it minted
+ *
+ * They are shares of the minter cohort, not of supply, so a whale minting 50
+ * counts once. Counting by token would let one wallet's behaviour stand in for
+ * a community's.
+ */
+export interface HolderStats {
+  /** Matches a partner's `handle`, lowercased, so a card can find its stats. */
+  handle: string
+  collection: string
+  chain: string
+  contract: string
+  /** Hours after each mint that the flip question is asked. */
+  windowHours: number
+  minters: number
+  held: number
+  flipped: number
+  accumulated: number
+  /** ISO. Stats age badly and a card should be able to say how old they are. */
+  scannedAt: string
+  /** Blocks covered, so a rerun can be checked against the last one. */
+  fromBlock: number
+  toBlock: number
+}
