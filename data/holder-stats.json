@@ -26,5 +26,33 @@
     "scannedAt": "2026-09-14T11:28:19.096Z",
     "fromBlock": 11485748,
     "toBlock": 62764720
+  },
+  {
+    "handle": "cannacats",
+    "collection": "CannaCats",
+    "chain": "robinhood",
+    "contract": "0x289c8ce652f38029867842048068b39bd0464a3f",
+    "windowHours": 24,
+    "minters": 114,
+    "held": 16,
+    "flipped": 90,
+    "accumulated": 8,
+    "scannedAt": "2026-09-14T15:51:39.624Z",
+    "fromBlock": 34978761,
+    "toBlock": 62926635
+  },
+  {
+    "handle": "wifoutlaws",
+    "collection": "WIF Outlaws",
+    "chain": "robinhood",
+    "contract": "0x12a4c7659a4b7c4a2870b5167c4f8b014c7fa690",
+    "windowHours": 24,
+    "minters": 1670,
+    "held": 288,
+    "flipped": 1330,
+    "accumulated": 52,
+    "scannedAt": "2026-09-14T16:05:30.002Z",
+    "fromBlock": 40004792,
+    "toBlock": 62927978
   }
 ]

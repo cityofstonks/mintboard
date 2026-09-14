@@ -48,18 +48,33 @@ const ZERO = '0x0000000000000000000000000000000000000000'
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 async function rpc(method, params) {
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 8; i++) {
     try {
       const r = await fetch(RPC, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
       })
       const j = await r.json()
-      if (j.error) throw new Error(JSON.stringify(j.error).slice(0, 160))
+      if (j.error) {
+        /*
+         * A rate limit is not a failure, it is a "wait".
+         *
+         * Public endpoints answer 429 as a JSON-RPC error object rather than
+         * an HTTP status, so throwing on any j.error killed a twenty-minute
+         * scan outright the moment the node got busy — and running three
+         * scans at once is exactly what makes it busy. Retryable errors back
+         * off; only a genuinely bad request gives up.
+         */
+        const msg = JSON.stringify(j.error)
+        const retryable = /429|Too Many Requests|rate.?limit|timeout|busy|try again|capacity/i.test(msg)
+        if (!retryable || i === 7) throw new Error(msg.slice(0, 160))
+        await sleep(1500 * (i + 1) + Math.random() * 800)
+        continue
+      }
       return j.result
     } catch (e) {
-      if (i === 5) throw e
-      await sleep(500 * (i + 1))
+      if (i === 7) throw e
+      await sleep(600 * (i + 1))
     }
   }
 }
@@ -87,13 +102,24 @@ const latest = num(await rpc('eth_blockNumber', []))
 const MINT_TOPIC = '0x' + '0'.repeat(64)
 
 async function mintLogs() {
+  /*
+   * Refusals are counted, not swallowed.
+   *
+   * Public Ethereum endpoints answer historical log queries with "Archive
+   * requests require a personal token" — every probe errors, and treating a
+   * refusal as an empty range turned "I cannot see" into "there is nothing
+   * there". It reported two real 333- and 111-piece collections as having no
+   * mints at all, which is a confident lie rather than a failure.
+   */
+  let refused = 0, asked = 0
   try {
     const all = await rpc('eth_getLogs', [{
       fromBlock: '0x0', toBlock: '0x' + latest.toString(16),
       address: CONTRACT, topics: [TRANSFER, MINT_TOPIC],
     }])
+    asked++
     if (all?.length) return all
-  } catch { /* the node would not take the whole range */ }
+  } catch { refused++ }
 
   console.log('  node refused the full range, walking back in chunks')
   const out = []
@@ -105,15 +131,28 @@ async function mintLogs() {
         fromBlock: '0x' + from.toString(16), toBlock: '0x' + end.toString(16),
         address: CONTRACT, topics: [TRANSFER, MINT_TOPIC],
       }]) ?? []
+      asked++
       if (part.length) { out.push(...part); lowest = from; quiet = 0 }
       else if (lowest !== null && ++quiet >= 8) break
-    } catch { /* a refused span is not an empty one */ }
+    } catch { refused++ }
     await sleep(40)
+  }
+  if (!out.length && refused > 0 && refused >= asked) {
+    throw new Error(
+      `the ${CHAIN} endpoint refused every log query (${refused} of ${refused + asked}).\n`
+      + `  Public nodes usually will not serve historical logs. Set RPC_${CHAIN.toUpperCase()} to an\n`
+      + `  endpoint with archive access and run it again. This is not a finding about the collection.`)
   }
   return out
 }
 
-const mints = await mintLogs()
+let mints
+try {
+  mints = await mintLogs()
+} catch (e) {
+  console.error(String(e.message ?? e))
+  process.exit(1)
+}
 if (!mints.length) {
   console.error('Found no mints for that contract on this chain — check the address and --chain.')
   process.exit(1)
@@ -189,8 +228,8 @@ const wantBlocks = [...new Set([...mintBlocks, ...outBlocks])]
 console.log(`  ${wantBlocks.length} blocks and ${outTxs.size} transactions actually matter`)
 
 const ts = new Map()
-for (let i = 0; i < wantBlocks.length; i += 16) {
-  await Promise.all(wantBlocks.slice(i, i + 16).map(async b => {
+for (let i = 0; i < wantBlocks.length; i += 8) {
+  await Promise.all(wantBlocks.slice(i, i + 8).map(async b => {
     const blk = await rpc('eth_getBlockByNumber', [b, false])
     if (blk) ts.set(b, num(blk.timestamp))
   }))
@@ -200,8 +239,8 @@ for (let i = 0; i < wantBlocks.length; i += 16) {
 /** Which of those moves were a direct call to the collection — i.e. not a sale. */
 const direct = new Set()
 const txList = [...outTxs]
-for (let i = 0; i < txList.length; i += 16) {
-  await Promise.all(txList.slice(i, i + 16).map(async h => {
+for (let i = 0; i < txList.length; i += 8) {
+  await Promise.all(txList.slice(i, i + 8).map(async h => {
     const tx = await rpc('eth_getTransactionByHash', [h])
     if (tx && (tx.to ?? '').toLowerCase() === CONTRACT) direct.add(h)
   }))
