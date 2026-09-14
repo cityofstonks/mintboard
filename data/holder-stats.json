@@ -54,5 +54,20 @@
     "scannedAt": "2026-09-14T16:05:30.002Z",
     "fromBlock": 40004792,
     "toBlock": 62927978
+  },
+  {
+    "handle": "pixelord",
+    "collection": "Pixelord",
+    "chain": "robinhood",
+    "contract": "0x8215824669c453136cabe59a079c32aca2f87cd5",
+    "windowHours": 24,
+    "minters": 663,
+    "held": 41,
+    "flipped": 594,
+    "flippedWithin": 343,
+    "accumulated": 28,
+    "scannedAt": "2026-09-14T22:04:39.145Z",
+    "fromBlock": 35624859,
+    "toBlock": 63145777
   }
 ]

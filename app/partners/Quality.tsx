@@ -15,7 +15,7 @@ export default function Quality({ s }: { s: HolderStats }) {
   const pct = (v: number) => (v / n) * 100
   const parts = [
     { k: 'held', v: s.held, c: 'var(--accent)' },
-    { k: 'sold', v: s.flipped, c: 'var(--warn)' },
+    { k: 'sold at some point', v: s.flipped, c: 'var(--warn)' },
     { k: 'bought more', v: s.accumulated, c: 'var(--accent-2)' },
   ]
   const age = Math.floor((Date.now() - Date.parse(s.scannedAt)) / 86400_000)
@@ -38,7 +38,15 @@ export default function Quality({ s }: { s: HolderStats }) {
         ))}
       </div>
       <span className="note">
-        {s.minters.toLocaleString()} minters · sold within {s.windowHours}h counts as a flip
+        {s.minters.toLocaleString()} minters
+        {/*
+          * "sold" is every minter who ever sold. Only say "within Nh" when the
+          * scan actually recorded that split — captioning the all-time number
+          * with a 24h window overstates how fast a community flips, and that
+          * is the one figure a partner will come back and argue about.
+          */}
+        {typeof s.flippedWithin === 'number' &&
+          ` · ${s.flippedWithin.toLocaleString()} of the ${s.flipped.toLocaleString()} sellers went inside ${s.windowHours}h`}
         {age > 0 && ` · scanned ${age} day${age === 1 ? '' : 's'} ago`}
       </span>
     </div>

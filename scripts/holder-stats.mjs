@@ -303,6 +303,14 @@ if (!minters) {
 const row = {
   handle: HANDLE, collection: NAME, chain: CHAIN, contract: CONTRACT,
   windowHours: WINDOW_H, minters, held, flipped, accumulated,
+  /*
+   * How many of the sellers went inside the window, as opposed to selling at
+   * some point later. `flipped` is every minter who ever sold; a card that
+   * prints that number under the words "sold within 24h" overstates the
+   * flipping of a partner's community, which is the one number a partner will
+   * push back on. Both are kept so the card can say exactly which it means.
+   */
+  flippedWithin: flippedFast.size,
   scannedAt: new Date().toISOString(), fromBlock: start, toBlock: latest,
 }
 if (!WRITE) { console.log('\n--- dry run, nothing written. --write to save ---'); process.exit(0) }

@@ -146,7 +146,14 @@ export interface HolderStats {
   windowHours: number
   minters: number
   held: number
+  /** Every minter who ever sold — not only the ones inside the window. */
   flipped: number
+  /**
+   * Of those sellers, how many went inside `windowHours`. Optional because
+   * scans taken before this was recorded do not have it, and a card must not
+   * invent one: without it the card says "sold", never "sold within 24h".
+   */
+  flippedWithin?: number
   accumulated: number
   /** ISO. Stats age badly and a card should be able to say how old they are. */
   scannedAt: string
