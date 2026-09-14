@@ -1,4 +1,4 @@
-import raffles from '@/data/raffles.json'
+import { readRaffles } from './store'
 import type { RaffleEntry } from './types'
 
 /**
@@ -8,8 +8,9 @@ import type { RaffleEntry } from './types'
  * taking hands the moment it shuts, so a card still offering to let somebody
  * in spends a click and returns a page that will not count them.
  */
-export function liveRaffles(now = Date.now()): RaffleEntry[] {
-  return (raffles as RaffleEntry[])
+export async function liveRaffles(now = Date.now()): Promise<RaffleEntry[]> {
+  const all = await readRaffles()
+  return all
     .filter(r => {
       const t = Date.parse(r.closesAt)
       return Number.isFinite(t) && t > now

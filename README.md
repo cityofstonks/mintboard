@@ -158,6 +158,39 @@ backwards, which is why `/api/raffles` is never gated.
 The calendar file leaves undated mints out entirely: an event at an invented
 time looks like knowledge.
 
+## The admin page
+
+`/admin` lets somebody who is not a developer add, edit and remove raffles.
+
+Set two environment variables in your Vercel project:
+
+| Variable | What it does |
+|---|---|
+| `ADMIN_PASSWORD` | **Required.** Without it the admin is switched off entirely. |
+| `ADMIN_SECRET` | Optional. Signs the session cookie; derived from the password if unset. |
+
+### Saving from a deployed site
+
+A deployed filesystem is **read-only**, so the admin cannot rewrite
+`data/raffles.json` in place the way it can on your laptop. Rather than drag a
+database into a tool whose whole pitch is "clone it and deploy", writes go back
+to GitHub:
+
+| Variable | Example |
+|---|---|
+| `GITHUB_TOKEN` | a fine-grained token with **Contents: read and write** on this repo only |
+| `GITHUB_REPO` | `your-name/mintboard` |
+| `GITHUB_BRANCH` | `main` (default) |
+
+Each save is a commit, so the history of who changed which raffle is kept for
+you, and undoing a bad edit is `git revert` rather than an argument about what
+it used to say. Two people editing at once collide loudly instead of one
+silently discarding the other.
+
+Without a token the board still works perfectly — the admin simply says it
+cannot save, rather than pretending to and losing the edit. Locally
+(`npm run dev`) it writes the file directly and you commit when you are happy.
+
 ## Running raffles
 
 Mintboard displays; it does not draw. Post your raffle wherever your community

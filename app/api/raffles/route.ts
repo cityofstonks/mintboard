@@ -9,5 +9,5 @@ export const dynamic = 'force-dynamic'
  * the order backwards. Nothing here is per-wallet, so there is nothing to leak.
  */
 export async function GET() {
-  return NextResponse.json({ raffles: liveRaffles() })
+  return NextResponse.json({ raffles: await liveRaffles() })
 }

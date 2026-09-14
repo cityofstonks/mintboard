@@ -26,13 +26,13 @@ export async function GET(req: Request) {
         message: `The board is for ${config.gate.label}. ${held === 0
           ? `${config.gate.min} or more.` : `You hold ${held} of the ${config.gate.min} needed.`}`,
         // Locked out of the board is not locked out of what is running.
-        raffles: liveRaffles(),
+        raffles: await liveRaffles(),
       }, { status: 403 })
     }
     const board = await boardFor(address)
-    return NextResponse.json({ locked: false, keys: held, ...board, raffles: liveRaffles() })
+    return NextResponse.json({ locked: false, keys: held, ...board, raffles: await liveRaffles() })
   }
 
   const board = await boardFor(address)
-  return NextResponse.json({ locked: false, keys: null, ...board, raffles: liveRaffles() })
+  return NextResponse.json({ locked: false, keys: null, ...board, raffles: await liveRaffles() })
 }
