@@ -1,0 +1,69 @@
+[
+  {
+    "code": "DEMO",
+    "name": "Demo Drop",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "demo-gtd",
+        "tier": "GTD"
+      },
+      {
+        "via": "spots",
+        "list": "demo-fcfs",
+        "tier": "FCFS"
+      }
+    ],
+    "startsAt": "2027-01-20T15:00:00Z",
+    "phases": [
+      {
+        "tier": "GTD",
+        "opensAt": "2027-01-20T15:00:00Z",
+        "price": null,
+        "limit": 1
+      },
+      {
+        "tier": "FCFS",
+        "opensAt": "2027-01-20T17:00:00Z",
+        "price": "0.0022",
+        "limit": 5
+      },
+      {
+        "tier": "PUBLIC",
+        "opensAt": "2027-01-20T19:00:00Z",
+        "closesAt": "2027-01-27T19:00:00Z",
+        "price": "0.0059",
+        "limit": 99
+      }
+    ],
+    "note": "Every window here is the project's own published schedule. The one highlighted is yours.",
+    "url": "https://example.com"
+  },
+  {
+    "code": "HOLD",
+    "name": "Holder Mint",
+    "eligibility": [
+      {
+        "via": "holds",
+        "collection": "bayc",
+        "min": 1,
+        "tier": "HOLDER"
+      }
+    ],
+    "startsAt": null,
+    "note": "Appears only for wallets that actually hold the collection, read from the chain on every load."
+  },
+  {
+    "code": "SOON",
+    "name": "Unannounced Drop",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "demo-gtd",
+        "tier": "GTD"
+      }
+    ],
+    "startsAt": null,
+    "note": "No date announced. The board says TBD rather than inventing one."
+  }
+]

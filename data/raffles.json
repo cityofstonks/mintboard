@@ -1,0 +1,24 @@
+[
+  {
+    "id": "demo-raffle-1",
+    "project": "Demo Drop",
+    "closesAt": "2027-01-18T20:00:00Z",
+    "tiers": [
+      {
+        "label": "Guaranteed",
+        "count": 10,
+        "who": "holders of 5+",
+        "drawn": true
+      },
+      {
+        "label": "First come first served",
+        "count": null,
+        "who": "every holder",
+        "drawn": false
+      }
+    ],
+    "homework": "Follow, repost and comment \u2014 then file the link in your proof channel.",
+    "note": "Delete this entry and add your own. Closed raffles drop off the board on their own.",
+    "enterUrl": "https://discord.gg/your-invite"
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "demo-gtd": {
+    "source": "Demo Drop, guaranteed tier, drawn 2026-01-01",
+    "expected": 2,
+    "wallets": [
+      "0x1111111111111111111111111111111111111111"
+    ],
+    "needs": {
+      "message": "You have not filed your X comment yet. No handle on the sheet, no spot on their list.",
+      "wallets": [
+        "0x1111111111111111111111111111111111111111"
+      ]
+    }
+  },
+  "demo-fcfs": {
+    "source": "Demo Drop, first-come tier, drawn 2026-01-01",
+    "wallets": [
+      "0x2222222222222222222222222222222222222222"
+    ],
+    "delivery": {
+      "0x2222222222222222222222222222222222222222": "bc1pexampletaprootaddressgoeshere0000000000000000000000000000"
+    }
+  }
+}

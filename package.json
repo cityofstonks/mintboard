@@ -1,0 +1,23 @@
+{
+  "name": "mintboard",
+  "version": "1.0.0",
+  "private": false,
+  "description": "A mint board for NFT communities: shows each wallet only the mints it actually qualifies for, plus the raffles it can enter.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.3.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.6.0"
+  }
+}
