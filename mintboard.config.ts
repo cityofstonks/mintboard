@@ -59,12 +59,20 @@ const config: BoardConfig = {
    *
    * A fresh clone replaces everything below and nothing above it.
    */
-  gate: {
-    chain: 'robinhood',
-    contract: '0x1a37f894f92a0b5c9229aee30a72385ba0a1f355',
-    min: 1,
-    label: 'key holders',
-  },
+  /*
+   * No gate. Anybody may check any wallet.
+   *
+   * It used to require a key. The reasoning was that the board is for holders
+   * — but the board's job is to answer "what did I win", and the people most
+   * in need of that answer are the ones who won a spot and hold nothing:
+   * 69 of our 108 spot winners. Asking them to prove they belong before
+   * telling them what they already own had it exactly backwards.
+   *
+   * Nothing here is secret. Every spot list is published, every wallet on it
+   * was drawn in the open, and a stranger pasting an address learns only what
+   * that address already won. There was never much to protect.
+   */
+  gate: null,
 
   // Public endpoints, overridable with env vars so a busy community can point
   // at its own paid RPC without editing code. Add any EVM chain you need.
