@@ -30,7 +30,8 @@
         "price": "0.0014",
         "limit": 1
       }
-    ]
+    ],
+    "endedAt": "2026-09-14T17:00:00.000Z"
   },
   {
     "code": "PTHG",
@@ -220,6 +221,7 @@
       }
     ],
     "note": "4,444 code-drawn guardians on OpenSea. GTD and FCFS mint at 0.001 ETH, public at 0.0016. Check your phase on their own checker at astralsentinels.fun/whitelist.",
-    "url": "https://x.com/AstralSentinels"
+    "url": "https://x.com/AstralSentinels",
+    "endedAt": "2026-09-14T16:00:00.000Z"
   }
 ]

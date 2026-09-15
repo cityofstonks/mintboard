@@ -25,6 +25,16 @@ export interface MintEntry {
   url?: string
   /** When the box filling these spot lists closes, if it has not yet. */
   spotsDrawAt?: string | null
+  /**
+   * When this mint's window actually shut.
+   *
+   * Without it a mint stays "live" for a grace period after its start, which
+   * is right for the common case — projects run late, and dropping the row on
+   * the minute takes the details away from somebody mid-mint. But the grace is
+   * a guess, and an operator who KNOWS it is over should be able to say so
+   * rather than wait for a timer to agree.
+   */
+  endedAt?: string | null
 }
 
 export interface SpotList {

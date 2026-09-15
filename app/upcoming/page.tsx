@@ -47,9 +47,13 @@ export default async function Upcoming() {
       const list = e.via === 'spots' ? SPOTS[e.list] : undefined
       return { tier: e.tier, have: list?.wallets.length ?? 0 }
     })
+    // An explicit end beats the grace timer. stateOf already takes a close,
+    // so passing endedAt makes a finished mint read as finished immediately
+    // rather than when a 24-hour window happens to run out.
+    const state = stateOf(m.startsAt ?? null, now, m.endedAt ?? null)
     return {
       code: m.code, name: m.name, url: m.url, note: m.note,
-      when: m.startsAt, state: stateOf(m.startsAt ?? null, now),
+      when: m.startsAt, endedAt: m.endedAt ?? null, state,
       tiers, total: tiers.reduce((a, t) => a + t.have, 0),
     }
   })
@@ -64,7 +68,19 @@ export default async function Upcoming() {
     return a.name.localeCompare(b.name)
   })
 
+  /*
+   * Done and still to come.
+   *
+   * A mint that has been and gone is not clutter to hide — it is the only
+   * evidence a stranger has that this room actually gets spots and actually
+   * delivers them. Anybody weighing whether to join, or whether to hand over
+   * an allocation, is asking "has this worked before", and a page that only
+   * ever shows the future cannot answer that.
+   */
+  const done = rows.filter(r => r.state === 'closed')
+  const ahead = rows.filter(r => !done.includes(r))
   const totalSpots = rows.reduce((a, r) => a + r.total, 0)
+  const deliveredSpots = done.reduce((a, r) => a + r.total, 0)
   /*
    * The soonest thing with a date, for the third tile.
    *
@@ -75,7 +91,7 @@ export default async function Upcoming() {
    * number still exists where it is useful — the engine's spot-wallet-audit
    * reports it privately — and nowhere a partner has to read it.
    */
-  const next = rows.find(r => r.when && Date.parse(r.when) > now && r.state !== 'live')
+  const next = ahead.find(r => r.when && Date.parse(r.when) > now && r.state !== 'live')
 
   return (
     <main className="wrap">
@@ -88,9 +104,12 @@ export default async function Upcoming() {
 
       <div className="cards" style={{ margin: '22px 0 8px' }}>
         <article className="card">
-          <div className="code">SPOTS HELD</div>
+          <div className="code">SPOTS WON</div>
           <span className="big">{totalSpots}</span>
-          <span className="sub">across {rows.length} mints</span>
+          <span className="sub">
+            across {rows.length} mints
+            {deliveredSpots > 0 && <> · <b style={{ color: 'var(--ink)' }}>{deliveredSpots}</b> already delivered</>}
+          </span>
         </article>
         <article className="card">
           <div className="code">OPEN NOW</div>
@@ -136,9 +155,9 @@ export default async function Upcoming() {
         </>
       )}
 
-      <p className="heading">Mints we hold spots in</p>
+      <p className="heading">Still to come</p>
       <div className="cards">
-        {rows.map(r => (
+        {ahead.map(r => (
           <article className={`card${r.state === 'live' ? ' is-live' : ''}`} key={r.code}>
             <div>
               <span className="code">{r.code}</span>{' '}
@@ -161,6 +180,35 @@ export default async function Upcoming() {
           </article>
         ))}
       </div>
+
+      {done.length > 0 && (
+        <>
+          <p className="heading">Already delivered</p>
+          <p className="lede" style={{ marginBottom: 14, maxWidth: '62ch' }}>
+            Mints this room has been given spots in and already minted. This is the part worth
+            checking if you are deciding whether to join, or whether to hand this community an
+            allocation — every one of these was drawn in the open and the winners are on chain.
+          </p>
+          <div className="cards">
+            {done.map(r => (
+              <article className="card" key={r.code} style={{ opacity: .92 }}>
+                <div>
+                  <span className="code">{r.code}</span>{' '}
+                  <span className="tier">{r.total} {r.total === 1 ? 'spot' : 'spots'}</span>
+                </div>
+                <h3>{r.url ? <a href={r.url} target="_blank" rel="noopener">{r.name}</a> : r.name}</h3>
+                <div>
+                  <span className="big s-closed" style={{ fontSize: 20 }}>MINTED</span>{' '}
+                  <span className="at">{fmt(r.endedAt ?? r.when)}</span>
+                </div>
+                <div className="tiers">
+                  {r.tiers.map((t, i) => <span key={i}><b>{t.have} {t.tier}</b></span>)}
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
 
       <p className="note" style={{ marginTop: 28 }}>
         Counts come from the same spot lists the board reads, so this page and a holder&rsquo;s own
