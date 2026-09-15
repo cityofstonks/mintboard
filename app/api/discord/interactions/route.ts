@@ -8,6 +8,7 @@ import { select, insert, upsert, update, rest, dbReady } from '@/lib/db'
 import { balanceOf } from '@/lib/chain'
 import { VERIFY_ADDRESS, verifyReady, blockNow, findProof, walletsOf, ownerOf } from '@/lib/verify'
 import { syncTiers, canAssignRoles, type Tier } from '@/lib/roles'
+import { sweep } from '@/app/api/cron/close/route'
 
 /** City of Stonks' tiers. Read from config once this is multi-guild. */
 const KEY_TIERS: Tier[] = [
@@ -266,6 +267,11 @@ export async function POST(req: Request) {
   }
 
   const guildId = body.guild_id ?? ''
+
+  // Any button press is also a chance to notice a raffle that has closed.
+  // Swallowed on purpose: a sweep that fails must never turn somebody's
+  // working button into an error.
+  after(() => sweep().catch(() => {}))
 
   if (body.type === MODAL_SUBMIT && action === 'verify') {
     const wallet = (body.data?.components?.[0]?.components?.[0]?.value ?? '').trim().toLowerCase()

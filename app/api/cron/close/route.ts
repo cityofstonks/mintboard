@@ -41,15 +41,16 @@ async function post(channelId: string, content: string): Promise<string | null> 
   return (await r.json().catch(() => null))?.id ?? null
 }
 
-export async function GET(req: NextRequest) {
-  // Vercel's scheduler sends the project's CRON_SECRET. Anything else is a
-  // stranger asking us to draw a raffle early.
-  const secret = process.env.CRON_SECRET ?? ''
-  if (secret && req.headers.get('authorization') !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'no' }, { status: 401 })
-  }
-  if (!dbReady()) return NextResponse.json({ error: 'db not configured' }, { status: 503 })
-
+/**
+ * The draw itself, callable without a request.
+ *
+ * Exists because this plan allows exactly one cron a day, which would leave a
+ * raffle sitting drawn-but-unannounced for up to 24 hours. The interactions
+ * endpoint calls this too, so the first person to touch a button after a
+ * close triggers it — and the daily run is only the backstop for a room that
+ * went quiet.
+ */
+export async function sweep(): Promise<unknown[]> {
   const now = new Date().toISOString()
   const due = await select<Row[]>(
     `bot_raffles?status=eq.open&closes_at=lte.${now}`
@@ -92,12 +93,27 @@ export async function GET(req: NextRequest) {
 
       // The record is written whatever Discord did. A winner who never saw a
       // ping must still be able to find themselves on the board.
+      if (posted === 0) {
+        /*
+         * Nothing reached Discord — no token, an outage, a bad channel.
+         *
+         * Release the claim and leave the raffle open so the next sweep tries
+         * again. This is only safe because the draw is a pure function of
+         * inputs fixed before it ran: the retry produces the SAME winners,
+         * every time. Marking it drawn here would be the old failure exactly
+         * — a raffle recorded as finished that nobody was ever told about.
+         */
+        await rest(`bot_draws?raffle_id=eq.${r.id}&pass=eq.1`, { method: 'DELETE' })
+        done.push({ id: r.id, project: r.project, error: 'could not announce', retry: 'next sweep' })
+        continue
+      }
+
       await update(`bot_draws?raffle_id=eq.${r.id}&pass=eq.1`, {
         message_id: first, seed: result.seed, unclaimed: result.short,
         winners: result.tiers, pool: result.pool,
       })
-      // Closed whether or not Discord took the post. The draw happened; a
-      // failed announcement is a thing to repost, not a reason to redraw.
+      // Partly announced still counts as drawn: the winners are recorded and
+      // a missing continuation is a repost, not a redraw.
       await update(`bot_raffles?id=eq.${r.id}`, { status: 'drawn' })
 
       // Ticket counts go alongside the winners so the published seed can be
@@ -118,5 +134,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ checked: due.length, done })
+  return done
+}
+
+export async function GET(req: NextRequest) {
+  // Vercel's scheduler sends the project's CRON_SECRET. Anything else is a
+  // stranger asking us to draw. They cannot draw anything EARLY — sweep only
+  // touches raffles already past their close — but they could race the
+  // announcement, so the door stays shut.
+  const secret = process.env.CRON_SECRET ?? ''
+  if (secret && req.headers.get('authorization') !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'no' }, { status: 401 })
+  }
+  if (!dbReady()) return NextResponse.json({ error: 'db not configured' }, { status: 503 })
+  return NextResponse.json({ done: await sweep() })
 }
