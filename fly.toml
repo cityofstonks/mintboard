@@ -1,0 +1,35 @@
+# Mintboard.
+#
+# Next.js needs a real Node runtime, so this is a plain container rather than
+# anything clever.
+app = 'mintboard'
+primary_region = 'sjc'
+
+[build]
+
+[env]
+  PORT = '8080'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Scaling to zero is right for this: the board is bursty — quiet for hours,
+  # then three hundred people at once when a raffle closes.
+  auto_stop_machines = 'suspend'
+  auto_start_machines = true
+  min_machines_running = 0
+
+  # A health check that hits a route actually doing work, not a static file.
+  # A process that is up but cannot answer a board query is not healthy, and
+  # a check on '/' would never notice.
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/api/board?address=0x0000000000000000000000000000000000000001'
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
