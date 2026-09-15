@@ -32,14 +32,21 @@ export default function Admin() {
   const [partners, setPartners] = useState<Partner[]>([])
 
   const load = useCallback(async () => {
-    const r = await fetch('/api/admin/raffles')
-    if (r.status === 401) { setAuthed(false); return }
-    const d = await r.json()
-    setList(d.raffles ?? []); setMode(d.mode ?? ''); setAuthed(true)
+    /*
+     * Which sign-in methods exist is asked FIRST, and never behind the auth
+     * check — the buttons are needed precisely when you are signed out, and
+     * loading them after the 401 bail meant they only ever appeared to people
+     * who no longer needed them.
+     */
     try {
       const ar = await fetch('/api/auth/providers')
       if (ar.ok) { const a = await ar.json(); setProviders(a.providers ?? []); setPasswordOn(Boolean(a.password)) }
     } catch { /* the password form still works */ }
+
+    const r = await fetch('/api/admin/raffles')
+    if (r.status === 401) { setAuthed(false); return }
+    const d = await r.json()
+    setList(d.raffles ?? []); setMode(d.mode ?? ''); setAuthed(true)
     const pr = await fetch('/api/partners')
     if (pr.ok) {
       const pd = await pr.json()
