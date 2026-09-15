@@ -203,4 +203,14 @@ export interface HolderStats {
   scannedAt: string
   /** The block the ownership replay ran to, so a rerun can be compared. */
   atBlock: number
+  /**
+   * Which way round the allocation went.
+   *
+   * Unset (the default) means somebody else's community was given OUR spots.
+   * `true` means the reverse: our room was given somebody else's, and this is
+   * what we did with it. Both answer the same question — of the wallets given
+   * an allocation, how many still hold what they minted — so they rank in one
+   * table. The flag exists to label them, not to score them differently.
+   */
+  outbound?: boolean
 }

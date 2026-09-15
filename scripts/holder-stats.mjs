@@ -69,7 +69,32 @@ async function rpc(method, params) {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
       })
-      const j = await r.json()
+      /*
+       * A CHALLENGE PAGE IS NOT AN ANSWER.
+       *
+       * The endpoint sits behind Cloudflare, and once it decides you are
+       * asking too often it stops replying in JSON and serves an HTML "just a
+       * moment" page instead. `r.json()` then throws a SyntaxError about an
+       * unexpected '<', which reads like a bug in the scanner rather than a
+       * closed door, and the retry loop never sees it because the throw
+       * happens before the error check below. Three scans died that way.
+       *
+       * Read the body once as text, and treat HTML as the rate limit it is.
+       */
+      const raw = await r.text()
+      if (raw.startsWith('<') || /just a moment|cf-chl|challenge-platform/i.test(raw.slice(0, 600))) {
+        if (i === 7) throw new Error(
+          `${CHAIN} is serving a Cloudflare challenge instead of JSON — it is rate limiting this machine.\n`
+          + `  Wait a few minutes, or set RPC_${CHAIN.toUpperCase()} to an endpoint with real allowance.\n`
+          + `  This is not a finding about the collection.`)
+        // Long backoff: a challenge clears on a timescale of minutes, not ms.
+        await sleep(20_000 * (i + 1) + Math.random() * 4000)
+        continue
+      }
+      let j
+      try { j = JSON.parse(raw) }
+      catch { if (i === 7) throw new Error(`${CHAIN} returned something that is not JSON: ${raw.slice(0, 120)}`)
+              await sleep(2000 * (i + 1)); continue }
       if (j.error) {
         /*
          * A rate limit is not a failure, it is a "wait".
@@ -277,16 +302,21 @@ for (const l of all) {
  * Only the cohort. Everybody else who minted is somebody else's community and
  * has no business in this partner's number.
  */
-let minted = 0, held = 0, keysNow = 0
+let minted = 0, held = 0, boughtMore = 0, keysNow = 0
 for (const w of COHORT) {
-  keysNow += balance.get(w) ?? 0
+  const now = balance.get(w) ?? 0
+  keysNow += now
   const tokens = mintedBy.get(w)
   if (!tokens?.size) continue          // took a spot, never minted
   minted++
-  // Still owns at least one it minted. `stillOwns` is rebuilt from the replay
-  // rather than inferred from a balance, because a balance cannot tell a kept
-  // mint apart from a replacement bought on secondary.
+  // Still owns at least one it minted. Rebuilt from the replay rather than
+  // inferred from a balance, because a balance cannot tell a kept mint apart
+  // from a replacement bought on secondary.
   if ([...tokens].some(id => (currentOwner.get(id) ?? '') === w)) held++
+  // GOLD: holding more than they were ever handed. Counted per wallet because
+  // a room's total can be one collector — 293 keys from 2 wallets reads as a
+  // believing community until you count the wallets.
+  if (now > tokens.size) boughtMore++
 }
 
 const minters = minted
@@ -294,7 +324,8 @@ const pct = n => minters ? Math.round((n / minters) * 100) : 0
 console.log(`\n${NAME}: ${COHORT.size} on the allocation list, ${minted} of them minted`)
 console.log(`  still holding ${String(held).padStart(5)}  ${pct(held)}%`)
 console.log(`  sold          ${String(minted - held).padStart(5)}  ${pct(minted - held)}%`)
-console.log(`  in the room now ${String(keysNow).padStart(3)} token(s)${keysNow > minted ? ' — they kept buying' : ''}`)
+console.log(`  bought more   ${String(boughtMore).padStart(5)}  ${pct(boughtMore)}%   (GOLD)`)
+console.log(`  in the room now ${String(keysNow).padStart(3)} token(s)`)
 
 /*
  * Zero minters is never an answer. It means the scan started above the mints,
@@ -309,7 +340,7 @@ if (!minters) {
 
 const row = {
   handle: HANDLE, collection: NAME, chain: CHAIN, contract: CONTRACT,
-  minted, held, keysNow,
+  minted, held, boughtMore, keysNow,
 
   scannedAt: new Date().toISOString(), fromBlock: start, toBlock: latest,
 }

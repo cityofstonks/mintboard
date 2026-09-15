@@ -26,17 +26,23 @@ export default function Partners() {
         <>
           <p className="heading">What their holders did last time</p>
           <p className="lede" style={{ marginBottom: 16 }}>
-            <b>SOLD / HOLD / GOLD.</b> Every one of these communities was given an allocation
-            here, and this is what they did with it. <b>HOLD</b> still own what they minted.{' '}
-            <b>SOLD</b> did not. <b>GOLD</b> went and bought more than they were given — the one
-            a partner can be proud of. Read off our own Transfer logs, counting wallets rather
-            than tokens, so a room that minted fifty between three people cannot look like
-            fifty holders.
+            <b>SOLD / HOLD / GOLD.</b> Of the wallets given an allocation, how many still hold
+            what they minted. <b>HOLD</b> do. <b>SOLD</b> do not. <b>GOLD</b> went and bought more
+            than they were given. Counted as wallets rather than tokens, so a room that minted
+            fifty between three people cannot look like fifty holders.
+          </p>
+          <p className="lede" style={{ marginBottom: 16 }}>
+            Rows marked <b style={{ color: 'var(--accent)' }}>OUR ROOM</b> are the other direction:
+            allocations <em>we</em> were given, and what our holders did with them. It is the same
+            question asked of us, which is the only reason it belongs in the same table.
           </p>
           <div className="cards">
-            {byRetention(allStats()).map(s => (
-              <article className="card" key={s.handle}>
-                <div className="code">COLLAB</div>
+            {byRetention(allStats()).map((s, i) => (
+              <article className="card" key={s.handle}
+                style={s.outbound ? { borderColor: 'color-mix(in oklab, var(--accent) 45%, transparent)' } : undefined}>
+                <div className="code" style={s.outbound ? { color: 'var(--accent)' } : undefined}>
+                  #{i + 1} · {s.outbound ? 'OUR ROOM' : 'COLLAB'}
+                </div>
                 <h3>{s.collection}</h3>
                 <Quality s={s} />
               </article>

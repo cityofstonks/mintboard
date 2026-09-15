@@ -128,5 +128,38 @@
     "keysNow": 0,
     "scannedAt": "2026-09-14T22:26:49.850Z",
     "atBlock": 63160525
+  },
+  {
+    "handle": "cos-wallstreet",
+    "collection": "Wall Street Trader Card",
+    "minted": 92,
+    "held": 82,
+    "boughtMore": 7,
+    "keysNow": 162,
+    "scannedAt": "2026-09-15T04:10:00.000Z",
+    "atBlock": 63365092,
+    "outbound": true
+  },
+  {
+    "handle": "cos-boiler",
+    "collection": "Boiler Brokers",
+    "minted": 41,
+    "held": 34,
+    "boughtMore": 6,
+    "keysNow": 191,
+    "scannedAt": "2026-09-15T04:10:00.000Z",
+    "atBlock": 63365092,
+    "outbound": true
+  },
+  {
+    "handle": "cos-suitedapes",
+    "collection": "Suited Ape Society",
+    "minted": 155,
+    "held": 75,
+    "boughtMore": 25,
+    "keysNow": 551,
+    "scannedAt": "2026-09-15T04:10:00.000Z",
+    "atBlock": 63365092,
+    "outbound": true
   }
 ]
