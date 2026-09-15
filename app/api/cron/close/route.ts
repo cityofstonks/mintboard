@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { select, rest, update, dbReady } from '@/lib/db'
 import { drawTiers, seedFor, announcement, splitMessage, type Tier } from '@/lib/close'
 import { ticketsFor, DEFAULTS, type Params } from '@/lib/tickets'
+import { judge } from '@/lib/proof'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
@@ -20,11 +21,16 @@ const BOARD = `${(process.env.SITE_URL ?? 'https://mintboard-pi.vercel.app').rep
 
 interface Row {
   id: string; project: string; guild_id: string; channel_id: string
-  closes_at: string; tiers: Tier[]; params: Params | null
+  closes_at: string; created_at: string; tiers: Tier[]; params: Params | null
+  boost_url: string | null
 }
+
+/** The project's own X handle, so nobody boosts by linking their announcement. */
+const handleOf = (url: string | null): string | undefined =>
+  url?.match(/(?:x|twitter)\.com\/([A-Za-z0-9_]+)/i)?.[1]
 interface Entry {
   discord_user_id: string; held_at_entry: number | null
-  boosted: boolean | null; booster: boolean | null
+  boosted: boolean | null; booster: boolean | null; boost_proof: string | null
 }
 
 async function post(channelId: string, content: string): Promise<string | null> {
@@ -54,7 +60,8 @@ export async function sweep(): Promise<unknown[]> {
   const now = new Date().toISOString()
   const due = await select<Row[]>(
     `bot_raffles?status=eq.open&closes_at=lte.${now}`
-    + `&select=id,project,guild_id,channel_id,closes_at,tiers,params&order=closes_at.asc&limit=10`)
+    + `&select=id,project,guild_id,channel_id,closes_at,created_at,tiers,params,boost_url`
+    + `&order=closes_at.asc&limit=10`)
 
   const done: unknown[] = []
   for (const r of due) {
@@ -70,7 +77,37 @@ export async function sweep(): Promise<unknown[]> {
 
     try {
       const entries = await select<Entry[]>(
-        `bot_entries?raffle_id=eq.${r.id}&select=discord_user_id,held_at_entry,boosted,booster`)
+        `bot_entries?raffle_id=eq.${r.id}`
+        + `&select=discord_user_id,held_at_entry,boosted,booster,boost_proof`)
+
+      /*
+       * Judge the outstanding proofs before drawing, not after.
+       *
+       * The bot tells everybody who files one that "it is checked before the
+       * draw". Nothing was doing the checking — it was a person's job that had
+       * never been scheduled, and on the first real raffle 21 people reached
+       * four hours from close still unapproved. A promise nothing keeps is
+       * worse than not making it.
+       *
+       * These checks read the link, not the post, so they cannot confirm the
+       * right account was tagged. They can confirm nobody claimed a boost with
+       * a post that predates the raffle, a duplicate, or the project's own
+       * announcement — and they do it every time rather than when someone
+       * remembers.
+       */
+      const unjudged = entries.filter(e => e.boost_proof && !e.boosted)
+      let approved = 0
+      if (unjudged.length) {
+        const verdicts = judge(
+          unjudged.map(e => ({ userId: e.discord_user_id, url: e.boost_proof! })),
+          { projectHandle: handleOf(r.boost_url), openedAt: Date.parse(r.created_at), closesAt: Date.parse(r.closes_at) })
+        for (const v of verdicts) {
+          if (!v.ok) continue
+          await update(`bot_entries?raffle_id=eq.${r.id}&discord_user_id=eq.${v.userId}`, { boosted: true })
+          const hit = entries.find(e => e.discord_user_id === v.userId)
+          if (hit) { hit.boosted = true; approved++ }
+        }
+      }
       const p = r.params ?? DEFAULTS
       const result = drawTiers(
         entries.map(e => ({
@@ -125,6 +162,8 @@ export async function sweep(): Promise<unknown[]> {
           a + ticketsFor(e.held_at_entry ?? 0, Boolean(e.boosted), p, Boolean(e.booster)), 0),
         winners: result.tiers.map(t => ({ tier: t.label, n: t.winners.length })),
         unclaimed: result.short,
+        boostsApproved: approved,
+        boostsRefused: unjudged.length - approved,
         announced: `${posted}/${parts.length}`,
       })
     } catch (err) {
