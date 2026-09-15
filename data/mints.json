@@ -15,7 +15,7 @@
       }
     ],
     "startsAt": "2026-09-14T15:00:00.000Z",
-    "note": "4,000 hand-drawn Greys, each carrying a real company. Minting on OpenSea, Robinhood Chain. The project needs an X username for every winner — file your comment link in #mint-proof or the spot cannot be passed on.",
+    "note": "4,000 hand-drawn Greys, each carrying a real company. Minting on OpenSea, Robinhood Chain. The project needs an X username for every winner \u2014 file your comment link in #mint-proof or the spot cannot be passed on.",
     "url": "https://opensea.io/collection/thezorpians/overview",
     "phases": [
       {
@@ -43,9 +43,18 @@
         "tier": "GTD"
       }
     ],
-    "startsAt": null,
-    "note": "420 free Ordinals on Bitcoin, every inscription ending 70ad on a Nakamoto sat. Delivery needs a taproot address starting bc1p — a bc1q segwit address cannot hold an inscription.",
-    "url": "https://x.com/toadstools_btc"
+    "startsAt": "2026-09-17T14:00:00.000Z",
+    "note": "419 free Ordinals on Bitcoin, minting on Ord Dropz. Blind mint \u2014 you do not see which Toadstool you got until it lands, and nobody can snipe it out of the mempool. Every piece sits on a block-9443 Nakamoto sat and every inscription ID ends 70ad. Allowlist is a six-hour window from launch with all 419 reserved, one per wallet. Delivery needs the taproot address (bc1p\u2026) you submitted \u2014 a bc1q segwit address cannot hold an inscription.",
+    "url": "https://x.com/toadstools_btc/status/2099765547139477724",
+    "phases": [
+      {
+        "tier": "GTD",
+        "opensAt": "2026-09-17T14:00:00Z",
+        "closesAt": "2026-09-17T20:00:00Z",
+        "price": null,
+        "limit": 1
+      }
+    ]
   },
   {
     "code": "HWLV",
@@ -58,7 +67,7 @@
       }
     ],
     "startsAt": null,
-    "note": "The Ape Cubz evolution by Deebs. Robinhood Chain, launching through Unvault — no date announced yet. Holding 2 Ape Cubz is a guaranteed wolf on their own terms, separate from the spot you hold here.",
+    "note": "The Ape Cubz evolution by Deebs. Robinhood Chain, launching through Unvault \u2014 no date announced yet. Holding 2 Ape Cubz is a guaranteed wolf on their own terms, separate from the spot you hold here.",
     "url": "https://x.com/rhoodwolves"
   },
   {
@@ -138,7 +147,7 @@
       }
     ],
     "startsAt": null,
-    "note": "10K generative Gods on Robinhood Chain, built from 179 attributes. A FREE mint, whitelist only — their Godlist is guaranteed and their Moblist is first-come. No date announced yet.",
+    "note": "10K generative Gods on Robinhood Chain, built from 179 attributes. A FREE mint, whitelist only \u2014 their Godlist is guaranteed and their Moblist is first-come. No date announced yet.",
     "url": "https://x.com/pharaohgodmob",
     "spotsDrawAt": "2026-09-14T20:45:13Z"
   },
@@ -159,7 +168,7 @@
     ],
     "startsAt": null,
     "spotsDrawAt": "2026-09-15T00:32:38Z",
-    "note": "3,232 pixel furnaces on Robinhood Chain. Each mint activates an ERC-6551 token-bound wallet tied to the NFT — sell the Furnace and the wallet and everything in it goes with it. Mint price and date not announced yet.",
+    "note": "3,232 pixel furnaces on Robinhood Chain. Each mint activates an ERC-6551 token-bound wallet tied to the NFT \u2014 sell the Furnace and the wallet and everything in it goes with it. Mint price and date not announced yet.",
     "url": "https://x.com/Thefurnacexyz"
   },
   {

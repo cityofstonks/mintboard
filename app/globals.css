@@ -316,3 +316,44 @@ button:focus-visible, .btn:focus-visible, a:focus-visible, .enter:focus-visible,
 }
 /* The sticky header must not sit on top of whatever an anchor jumps to. */
 html { scroll-padding-top: 74px; }
+
+/* ── ordinal address checker ─────────────────────────────────────────────── */
+.checker { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0 4px; }
+.checker input {
+  flex: 1 1 min(420px, 100%);
+  padding: 13px 15px;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--glass);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+}
+.checker input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.checker button {
+  padding: 13px 24px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--bg-deep);
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.checker button:disabled { opacity: .45; cursor: default; }
+
+.verdict {
+  margin: 18px 0 0;
+  padding: 16px 18px;
+  border: 1px solid var(--edge);
+  border-left-width: 3px;
+  border-radius: var(--r-sm);
+  background: var(--glass);
+}
+.verdict strong { display: block; margin-bottom: 6px; }
+.verdict p { margin: 6px 0 0; }
+.verdict code { font-size: .92em; }
+.verdict.good { border-left-color: var(--accent); }
+.verdict.bad { border-left-color: var(--danger); }
+.verdict.bad strong { color: var(--danger); }

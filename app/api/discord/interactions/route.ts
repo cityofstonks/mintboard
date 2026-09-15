@@ -8,6 +8,7 @@ import { select, insert, upsert, update, rest, dbReady } from '@/lib/db'
 import { balanceOf } from '@/lib/chain'
 import { VERIFY_ADDRESS, verifyReady, blockNow, checkProof, walletsOf, ownerOf } from '@/lib/verify'
 import { claimExpired, CLAIM_MINUTES } from '@/lib/claim'
+import { declare as declareOrdinal, ordinalsOf } from '@/lib/ordinals'
 import { syncTiers, canAssignRoles, type Tier } from '@/lib/roles'
 import { sweep } from '@/app/api/cron/close/route'
 
@@ -222,6 +223,25 @@ export async function POST(req: Request) {
     })
   }
 
+  // A Bitcoin delivery address. Same instant-modal rule as everything else.
+  if (body.type === MESSAGE_COMPONENT && action === 'ordinal') {
+    return NextResponse.json({
+      type: MODAL,
+      data: {
+        custom_id: 'ordinal:go', title: 'Ordinal delivery address',
+        components: [{
+          type: 1,
+          components: [{
+            type: 4, custom_id: 'address', style: 1,
+            label: 'Your taproot address',
+            placeholder: 'bc1p… — a bc1q address cannot hold an inscription',
+            min_length: 14, max_length: 90, required: true,
+          }],
+        }],
+      },
+    })
+  }
+
   // Verification. The modal is answered with no work, same reason as the rest.
   if (body.type === MESSAGE_COMPONENT && action === 'verify') {
     return NextResponse.json({
@@ -358,6 +378,31 @@ export async function POST(req: Request) {
     return thinking()
   }
 
+  if (body.type === MODAL_SUBMIT && action === 'ordinal') {
+    const input = (body.data?.components?.[0]?.components?.[0]?.value ?? '').trim()
+    after(async () => {
+      const say = (m: string) => finish(body.application_id, body.token, m)
+      try {
+        const r = await declareOrdinal(user.id, guildId, input)
+        if (!r.ok) {
+          // The checksum and the wrong-address-type cases both land here, and
+          // both already carry a reason written for the person reading it.
+          return say(`**Not recorded.** ${r.why}\n\nNothing was saved — paste it again when you have it.`)
+        }
+        const evm = await walletsOf(user.id)
+        return say(
+          `**Recorded.** \`${r.wallet.slice(0, 10)}…${r.wallet.slice(-8)}\` is where your ordinals go.`
+          + (r.replaced ? '\nThis replaced the address you had on file — delivery has one answer, not a list.' : '')
+          + (evm.length
+            ? `\n\nTied to your ${evm.length} verified EVM wallet${evm.length === 1 ? '' : 's'}, so we know it is you.`
+            : '\n\nYou have no verified EVM wallet yet. Press **Verify a wallet** so this address is tied to a proven identity rather than a name.'))
+      } catch {
+        await say('Could not save that just now. Nothing changed — try again.')
+      }
+    })
+    return thinking()
+  }
+
   if (body.type === MODAL_SUBMIT && action === 'vunlink') {
     const wallet = (body.data?.components?.[0]?.components?.[0]?.value ?? '').trim().toLowerCase()
     after(async () => {
@@ -466,9 +511,23 @@ export async function POST(req: Request) {
       try {
         if (action === 'vwallets') {
           const mine = await walletsOf(user.id)
-          if (!mine.length) return say('No verified wallets yet. Press **Verify a wallet** to add one.')
-          return say('**Your verified wallets**\n'
-            + mine.map(w => `▸ \`${w.wallet}\` — since ${w.verified_at.slice(0, 10)}`).join('\n'))
+          const ords = await ordinalsOf(user.id)
+          if (!mine.length && !ords.length) {
+            return say('Nothing on file yet. Press **Verify a wallet**, or **Ordinal address** for Bitcoin mints.')
+          }
+          const lines: string[] = []
+          if (mine.length) {
+            lines.push('**Verified — proven on chain**')
+            lines.push(...mine.map(w => `▸ \`${w.wallet}\` — since ${w.verified_at.slice(0, 10)}`))
+          }
+          if (ords.length) {
+            // Labelled as declared on purpose. These have not been proven and
+            // should never read as though they have.
+            if (lines.length) lines.push('')
+            lines.push('**Ordinal delivery — declared, not proven**')
+            lines.push(...ords.map(o => `▸ \`${o.wallet}\``))
+          }
+          return say(lines.join('\n'))
         }
 
         if (action === 'vresync') {

@@ -21,6 +21,7 @@ const LINKS: [string, string][] = [
   ['/board', 'The board'],
   ['/partners', 'Collections'],
   ['/dashboard', 'Dashboard'],
+  ['/ordinals', 'Ordinals'],
   ['/guide', 'Guide'],
 ]
 
