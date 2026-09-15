@@ -180,6 +180,27 @@ export async function POST(req: Request) {
     })
   }
 
+  // Unlinking. A modal for the same reason as the others, and it asks for the
+  // address rather than unlinking silently — this is the one verification
+  // action that takes something away, so it should cost a deliberate paste.
+  if (body.type === MESSAGE_COMPONENT && action === 'vunlink') {
+    return NextResponse.json({
+      type: MODAL,
+      data: {
+        custom_id: 'vunlink:go', title: 'Unlink a wallet',
+        components: [{
+          type: 1,
+          components: [{
+            type: 4, custom_id: 'address', style: 1,
+            label: 'The wallet to unlink',
+            placeholder: 'Paste it in full. Your roles are recalculated after.',
+            min_length: 42, max_length: 42, required: true,
+          }],
+        }],
+      },
+    })
+  }
+
   // Verification. The modal is answered with no work, same reason as the rest.
   if (body.type === MESSAGE_COMPONENT && action === 'verify') {
     return NextResponse.json({
@@ -311,6 +332,42 @@ export async function POST(req: Request) {
           + `Then press **I have sent it**. This claim is good for ${CLAIM_MINUTES} minutes.`)
       } catch {
         await say('Could not start that just now. Nothing was recorded — try again.')
+      }
+    })
+    return thinking()
+  }
+
+  if (body.type === MODAL_SUBMIT && action === 'vunlink') {
+    const wallet = (body.data?.components?.[0]?.components?.[0]?.value ?? '').trim().toLowerCase()
+    after(async () => {
+      const say = (m: string) => finish(body.application_id, body.token, m)
+      try {
+        const mine = await walletsOf(user.id)
+        if (!mine.some(w => w.wallet === wallet)) {
+          return say('That wallet is not linked to you. Press **My wallets** to see what is.')
+        }
+        // Marked unlinked rather than deleted: the row is the evidence that a
+        // proof was once accepted, and deleting it loses why somebody had a
+        // role last month.
+        await update(`verified_wallets?wallet=eq.${wallet}`, { unlinked_at: new Date().toISOString() })
+
+        const left = await walletsOf(user.id)
+        let held = 0, blind = false
+        for (const w of left) {
+          const n = await balanceOf(KEYS_CHAIN, KEYS_CONTRACT, w.wallet)
+          if (n === null) { blind = true; break }
+          held += n
+        }
+        if (blind || !canAssignRoles()) {
+          return say(`**Unlinked.** ${left.length} wallet${left.length === 1 ? '' : 's'} left.`
+            + ' Press **Resync** shortly to bring your roles in line.')
+        }
+        const { granted, removed } = await syncTiers(guildId, user.id, held, KEY_TIERS)
+        return say(`**Unlinked.** **${held}** across ${left.length} wallet${left.length === 1 ? '' : 's'}.\n`
+          + (granted ? `You are **${granted.name}**.` : 'No tier left.')
+          + (removed.length ? ` Removed: ${removed.join(', ')}.` : ''))
+      } catch {
+        await say('Could not do that just now. Nothing changed — try again.')
       }
     })
     return thinking()
