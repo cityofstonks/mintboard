@@ -125,15 +125,27 @@ export async function POST(req: Request) {
     return NextResponse.json({
       type: MODAL,
       data: {
-        custom_id: `wallet:${raffleId ?? 'none'}`, title: 'Your wallet',
-        components: [{
-          type: 1,
-          components: [{
-            type: 4, custom_id: 'address', style: 1,
-            label: 'Where a spot would be delivered',
-            placeholder: '0x…', min_length: 42, max_length: 42, required: true,
-          }],
-        }],
+        custom_id: `wallet:${raffleId ?? 'none'}`, title: 'Your wallets',
+        components: [
+          {
+            type: 1,
+            components: [{
+              type: 4, custom_id: 'holder', style: 1,
+              label: 'Wallet holding your keys',
+              placeholder: '0x… — this is what decides your tickets',
+              min_length: 42, max_length: 42, required: true,
+            }],
+          },
+          {
+            type: 1,
+            components: [{
+              type: 4, custom_id: 'delivery', style: 1,
+              label: 'Send the mint to (optional)',
+              placeholder: 'Leave blank to use the same one. A burner is fine here.',
+              min_length: 0, max_length: 42, required: false,
+            }],
+          },
+        ],
       },
     })
   }
@@ -160,17 +172,31 @@ export async function POST(req: Request) {
 
   // ── a wallet coming back from the modal ─────────────────────────────────
   if (body.type === MODAL_SUBMIT && action === 'wallet') {
-    const value = body.data?.components?.[0]?.components?.[0]?.value ?? ''
-    const wallet = value.trim().toLowerCase()
-    if (!/^0x[0-9a-f]{40}$/.test(wallet)) {
-      return reply('That is not a wallet address — `0x`, then 40 characters.')
+    const field = (id: string) => (body.data?.components ?? [])
+      .flatMap(r => r.components ?? []).find(c => c.custom_id === id)?.value ?? ''
+    const holder = field('holder').trim().toLowerCase()
+    const deliveryRaw = field('delivery').trim().toLowerCase()
+    if (!/^0x[0-9a-f]{40}$/.test(holder)) {
+      return reply('The keys wallet is not an address — `0x`, then 40 characters.')
     }
+    if (deliveryRaw && !/^0x[0-9a-f]{40}$/.test(deliveryRaw)) {
+      return reply('The delivery wallet is not an address — `0x`, then 40 characters. Leave it blank to use the same one.')
+    }
+    // Blank means "same as holdings", which is what everybody had before this
+    // existed and is still the right default.
+    const delivery = deliveryRaw || holder
     after(async () => {
       try {
-        await upsert('bot_wallets',
-          { discord_user_id: user.id, wallet, set_at: new Date().toISOString() }, 'discord_user_id')
+        await upsert('bot_wallets', {
+          discord_user_id: user.id, wallet: delivery,
+          holder_wallet: holder, set_at: new Date().toISOString(),
+        }, 'discord_user_id')
+        const short = (w: string) => `\`${w.slice(0, 8)}…${w.slice(-6)}\``
         await finish(body.application_id, body.token,
-          `Saved \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\`. Press **Enter** and you are in.`)
+          delivery === holder
+            ? `Saved ${short(holder)} for both. Press **Enter** and you are in.`
+            : `Saved. Tickets come from ${short(holder)}; the mint goes to ${short(delivery)}.`
+              + '\nYour keys never have to leave the wallet they are in. Press **Enter**.')
       } catch {
         await finish(body.application_id, body.token,
           'Could not save that just now. Try again in a moment — nothing was recorded.')
@@ -228,8 +254,13 @@ export async function POST(req: Request) {
       if (!raffle) return say('That raffle no longer exists.')
 
       const p = { ...DEFAULTS, ...(raffle.params ?? {}) }
-      const wallet = (await select<{ wallet: string }[]>(
-        `bot_wallets?discord_user_id=eq.${user.id}&limit=1`))?.[0]?.wallet ?? null
+      const saved = (await select<{ wallet: string; holder_wallet: string | null }[]>(
+        `bot_wallets?discord_user_id=eq.${user.id}&limit=1`))?.[0] ?? null
+      const wallet = saved?.wallet ?? null
+      // Holdings come from the keys wallet; the mint goes to the delivery
+      // wallet. Older rows have no holder_wallet and fall back to the one
+      // they already set, which is exactly what they meant by it.
+      const holderWallet = saved?.holder_wallet ?? wallet
 
       const closed = raffle.status !== 'open'
         || (raffle.closes_at ? Date.parse(raffle.closes_at) <= Date.now() : false)
@@ -261,7 +292,7 @@ export async function POST(req: Request) {
 
       let held = 0
       if (raffle.chain && raffle.contract) {
-        const n = await balanceOf(raffle.chain, raffle.contract, wallet)
+        const n = await balanceOf(raffle.chain, raffle.contract, holderWallet!)
         // null is UNREADABLE, never zero. Entering somebody at the base
         // ticket when they hold thirty is a loss they would never see.
         if (n === null) {
@@ -273,7 +304,8 @@ export async function POST(req: Request) {
       try {
         await insert('bot_entries', {
           raffle_id: raffleId, discord_user_id: user.id, wallet,
-          held_at_entry: held, boosted: false, booster: isBooster,
+          holder_wallet: holderWallet, held_at_entry: held,
+          boosted: false, booster: isBooster,
         }, 'return=minimal')
       } catch (e) {
         // The primary key does the work: a double-tap is one entry.
@@ -296,7 +328,8 @@ export async function POST(req: Request) {
         + `**${t} ticket${t === 1 ? '' : 's'}** · holding ${held}`
         + `${held >= p.holdCap ? ` (counting stops at ${p.holdCap})` : ''}`
         + `${isBooster ? ` · server booster ×${p.boosterMult}` : ''}\n`
-        + `Delivering to \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\`.${extra}`)
+        + `Delivering to \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\``
+        + `${holderWallet !== wallet ? ` · keys read from \`${holderWallet!.slice(0, 8)}…${holderWallet!.slice(-6)}\`` : ''}.${extra}`)
     } catch {
       await say('Something went wrong on our side. Nothing was recorded — try again.')
     }
