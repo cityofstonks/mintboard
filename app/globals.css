@@ -468,3 +468,17 @@ html { scroll-padding-top: 74px; }
 .hero { display: grid; gap: clamp(28px, 4vw, 54px); align-items: center;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+
+/* ── admin operations tables ─────────────────────────────────────────────── */
+.tablewrap { overflow-x: auto; margin-bottom: 8px; }
+table.ops { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 520px; }
+table.ops th {
+  text-align: left; font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); font-weight: 500;
+  padding: 8px 12px 8px 0; border-bottom: 1px solid var(--edge);
+}
+table.ops td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--edge); }
+table.ops td.mono { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+/* Numbers that need a person, rather than numbers that are merely large. */
+table.ops td.warn { color: var(--warn); font-weight: 600; }
+table.ops tbody tr:hover { background: color-mix(in oklab, var(--accent) 5%, transparent); }

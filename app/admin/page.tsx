@@ -1,5 +1,6 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
+import Ops from './Ops'
 import type { Partner, RaffleEntry, RaffleTier } from '@/lib/types'
 import { readOffer } from '@/lib/offer'
 
@@ -230,6 +231,9 @@ export default function Admin() {
       )}
 
       {msg && <p className="warn" style={{ marginTop: 14 }}>{msg}</p>}
+
+      <Ops />
+
 
       <p className="heading">On the board</p>
       {list.length === 0 && <div className="empty">No raffles yet. Add one below.</div>}
