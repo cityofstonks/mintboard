@@ -25,12 +25,12 @@ difference between a board and an advert, and everything below follows from it:
 
 ## Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR-NAME/mintboard)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cityofstonks/mintboard)
 
 Or locally:
 
 ```bash
-git clone https://github.com/YOUR-NAME/mintboard
+git clone https://github.com/cityofstonks/mintboard
 cd mintboard
 npm install
 npm run dev          # http://localhost:3000
