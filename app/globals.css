@@ -296,3 +296,13 @@ button:focus-visible, .btn:focus-visible, a:focus-visible, .enter:focus-visible,
   position: absolute; width: 1px; height: 1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
+
+/* The opportunities rail. A real scroll container, so a trackpad, a thumb and
+   the arrow keys all work without a carousel library. */
+.rail-scroll { scrollbar-width: thin; scrollbar-color: var(--edge-lit) transparent; }
+.rail-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--r); }
+.rail-scroll::-webkit-scrollbar { height: 8px; }
+.rail-scroll::-webkit-scrollbar-track { background: transparent; }
+.rail-scroll::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 999px; }
+.rail-scroll::-webkit-scrollbar-thumb:hover { background: var(--edge-lit); }
+@media (prefers-reduced-motion: reduce) { .rail-scroll { scroll-behavior: auto; } }

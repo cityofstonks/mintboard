@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { liveRaffles } from '@/lib/raffles'
+import { allCommunities } from '@/lib/communities'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic'
  * the order backwards. Nothing here is per-wallet, so there is nothing to leak.
  */
 export async function GET() {
-  return NextResponse.json({ raffles: await liveRaffles() }, {
+  return NextResponse.json({ raffles: await liveRaffles(), communities: allCommunities() }, {
     /*
      * Shared, identical for everybody, and it changes when an operator adds a
      * raffle — a few times a day, not a few times a second. Serve it from the

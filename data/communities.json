@@ -1,0 +1,16 @@
+[
+  {
+    "id": "bayc",
+    "name": "Bored Ape Yacht Club",
+    "icon": "🐵",
+    "x": "BoredApeYC",
+    "opensea": "https://opensea.io/collection/boredapeyachtclub",
+    "blurb": "The collection this board reads on a fresh clone, as a working example."
+  },
+  {
+    "id": "demo-community",
+    "name": "Your Community",
+    "icon": "🗝",
+    "blurb": "Replace this with your own. A community with no links shows none — nothing is invented."
+  }
+]

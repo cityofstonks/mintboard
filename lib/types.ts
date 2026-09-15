@@ -58,6 +58,33 @@ export interface BoardRow {
 
 export interface HeldAsset { collection: string; name: string; count: number }
 
+/**
+ * A community whose holders can enter something.
+ *
+ * The board already knows which WALLETS qualify. This is the other half a
+ * person needs before they paste anything: *which room do I have to be in*.
+ * Somebody who holds nothing yet should be able to read an opportunity, see
+ * whose community it is for, and go and find that community — so the links
+ * are part of the answer rather than decoration.
+ *
+ * Every link is optional and a missing one renders nothing. A community with
+ * no Discord is common; a fabricated invite is not recoverable.
+ */
+export interface Community {
+  id: string
+  name: string
+  /** One or two emoji. Shown on the picker button — no image hosting needed. */
+  icon?: string
+  /** X handle, no @. */
+  x?: string
+  /** Full invite URL. */
+  discord?: string
+  /** Full collection URL. */
+  opensea?: string
+  /** Optional one-liner: who they are, in their own words. */
+  blurb?: string
+}
+
 export interface RaffleTier {
   label: string
   /** null when uncapped — a blanket allowlist rather than a draw. */
@@ -85,6 +112,12 @@ export interface RaffleEntry {
   enterUrl?: string
   /** A claim's door is on the project's own site, not in our announcement. */
   url?: string
+  /**
+   * Community ids whose holders can enter. Hold any ONE of them and you
+   * qualify — they are alternatives, not requirements, which is why an empty
+   * list means open to everyone rather than open to nobody.
+   */
+  communities?: string[]
   homework?: string
   note?: string
 }

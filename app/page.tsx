@@ -1,5 +1,6 @@
 import config from '@/mintboard.config'
 import type { Metadata } from 'next'
+import Opportunities from './Opportunities'
 
 export const metadata: Metadata = {
   title: `${config.name} — a mint board for NFT communities`,
@@ -62,6 +63,8 @@ export default function Landing() {
           }}>Put one on your site</a>
         </div>
       </section>
+
+      <Opportunities />
 
       <section className="wrap" style={{ paddingTop: 0, paddingBottom: 40 }}>
         <div className="cards">
