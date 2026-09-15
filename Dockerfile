@@ -23,7 +23,9 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080 HOSTNAME=0.0.0.0
 RUN addgroup -g 1001 -S nodejs && adduser -S next -u 1001
 COPY --from=build --chown=next:nodejs /app/.next/standalone ./
 COPY --from=build --chown=next:nodejs /app/.next/static ./.next/static
-COPY --from=build --chown=next:nodejs /app/public ./public
+# No public/ directory in this repo — favicon and icons are app-router files,
+# which the standalone trace already carries. A COPY of a path that does not
+# exist fails the build outright rather than being skipped.
 USER next
 EXPOSE 8080
 CMD ["node", "server.js"]
