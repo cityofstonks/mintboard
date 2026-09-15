@@ -1,6 +1,25 @@
 import config from '@/mintboard.config'
 import type { Metadata } from 'next'
 import Opportunities from './Opportunities'
+import spots from '@/data/spots.json'
+import mints from '@/data/mints.json'
+import type { SpotList, MintEntry } from '@/lib/types'
+
+/*
+ * Counted, not typed out.
+ *
+ * This paragraph used to read "232 wallets across nine mints". Both numbers
+ * were true the day they were written and neither was true a fortnight later:
+ * 232 was the number of spot ROWS, the unique wallet count is less than half
+ * that, and a mint had come off the list. A landing page whose whole claim is
+ * "live, not a demo" cannot carry numbers that quietly go stale — that is the
+ * one place a wrong figure costs trust rather than accuracy.
+ */
+const LISTS = spots as Record<string, SpotList>
+const WALLETS = new Set(
+  Object.values(LISTS).flatMap(l => (l.wallets ?? []).map(w => String(w).toLowerCase())),
+).size
+const MINTS = (mints as MintEntry[]).length
 
 export const metadata: Metadata = {
   title: `${config.name} — a mint board for NFT communities`,
@@ -57,8 +76,8 @@ export default function Landing() {
         </p>
         <p className="lede" style={{ maxWidth: '58ch', marginTop: 14 }}>
           The board below is <strong>live, not a demo</strong> — it is City of Stonks&rsquo; own,
-          running 232 wallets across nine mints. Paste a key holder&rsquo;s address and check it
-          against what you already know.
+          running {WALLETS} wallets across {MINTS} mints. Paste a key holder&rsquo;s address and
+          check it against what you already know.
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '28px 0 0' }}>
           <a className="btn" href="/board">Check a wallet</a>
