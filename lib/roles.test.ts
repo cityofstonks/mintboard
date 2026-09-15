@@ -47,3 +47,21 @@ test('syncing never takes a role away unless asked', async () => {
   assert.equal(r.granted, null)
   assert.deepEqual(r.removed, [], 'nothing may be removed by default')
 })
+
+test('tiers stack — a Key Master is also a Key Holder', async () => {
+  /*
+   * Measured, not assumed: all 116 Key Masters in the guild also hold Key
+   * Holder, 116 of 116. Granting only the top tier would hand a new verifier
+   * Key Master without Key Holder and cut them out of anything gated on the
+   * lower role.
+   */
+  const { tiersEarned } = await import('./roles.ts')
+  assert.deepEqual(tiersEarned(7, TIERS).map(t => t.name), ['Key Master', 'Key Holder'])
+  assert.deepEqual(tiersEarned(3, TIERS).map(t => t.name), ['Key Holder'])
+  assert.deepEqual(tiersEarned(0, TIERS).map(t => t.name), [])
+})
+
+test('a broken count clears no tier at all', async () => {
+  const { tiersEarned } = await import('./roles.ts')
+  assert.deepEqual(tiersEarned(NaN, TIERS), [])
+})

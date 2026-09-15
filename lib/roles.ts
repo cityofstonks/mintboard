@@ -16,11 +16,26 @@ const H = () => ({
   'content-type': 'application/json',
 })
 
-/** Tiers, richest first. The first one a wallet clears is the one they get. */
+/**
+ * Tiers. A wallet gets EVERY tier it clears, not only the best one.
+ *
+ * That is not an assumption — it is what the server already does. All 116 Key
+ * Masters in City of Stonks also hold Key Holder, 116 of 116 with no
+ * exceptions, so the roles stack rather than replace. Granting only the top
+ * tier would have given new verifiers Key Master without Key Holder and quietly
+ * cut them out of everything gated on the lower role.
+ */
 export interface Tier { minHeld: number; roleId: string; name: string }
 
+/** The best tier a holding clears, for saying out loud. */
 export function tierFor(held: number, tiers: Tier[]): Tier | null {
   return [...tiers].sort((a, b) => b.minHeld - a.minHeld).find(t => held >= t.minHeld) ?? null
+}
+
+/** Every tier a holding clears, richest first — all of which get granted. */
+export function tiersEarned(held: number, tiers: Tier[]): Tier[] {
+  if (!Number.isFinite(held)) return []
+  return [...tiers].sort((a, b) => b.minHeld - a.minHeld).filter(t => held >= t.minHeld)
 }
 
 export async function addRole(guildId: string, userId: string, roleId: string): Promise<boolean> {
@@ -64,15 +79,18 @@ export async function syncTiers(
   guildId: string, userId: string, held: number, tiers: Tier[],
   { revoke = false } = {},
 ): Promise<{ granted: Tier | null; removed: string[] }> {
-  const earned = tierFor(held, tiers)
+  const earned = tiersEarned(held, tiers)
+  const top = earned[0] ?? null
   const removed: string[] = []
 
   if (revoke) {
     for (const t of tiers) {
-      if (earned && t.roleId === earned.roleId) continue
+      if (earned.some(e => e.roleId === t.roleId)) continue
       if (await removeRole(guildId, userId, t.roleId)) removed.push(t.name)
     }
   }
-  if (earned) await addRole(guildId, userId, earned.roleId)
-  return { granted: earned, removed }
+  // Every tier, not just the top one. Discord ignores a role somebody already
+  // has, so this is safe to run repeatedly.
+  for (const t of earned) await addRole(guildId, userId, t.roleId)
+  return { granted: top, removed }
 }
