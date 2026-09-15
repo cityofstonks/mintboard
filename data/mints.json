@@ -1,69 +1,225 @@
 [
   {
-    "code": "DEMO",
-    "name": "Demo Drop",
+    "code": "ZORP",
+    "name": "Zorpians",
     "eligibility": [
       {
         "via": "spots",
-        "list": "demo-gtd",
+        "list": "zorpians-gtd",
         "tier": "GTD"
       },
       {
         "via": "spots",
-        "list": "demo-fcfs",
+        "list": "zorpians-fcfs",
         "tier": "FCFS"
       }
     ],
-    "startsAt": "2027-01-20T15:00:00Z",
+    "startsAt": "2026-09-14T15:00:00.000Z",
+    "note": "4,000 hand-drawn Greys, each carrying a real company. Minting on OpenSea, Robinhood Chain. The project needs an X username for every winner — file your comment link in #mint-proof or the spot cannot be passed on.",
+    "url": "https://opensea.io/collection/thezorpians/overview",
     "phases": [
       {
         "tier": "GTD",
-        "opensAt": "2027-01-20T15:00:00Z",
-        "price": null,
+        "opensAt": "2026-09-14T15:00:00Z",
+        "price": "0.0014",
         "limit": 1
       },
       {
         "tier": "FCFS",
-        "opensAt": "2027-01-20T17:00:00Z",
-        "price": "0.0022",
-        "limit": 5
-      },
-      {
-        "tier": "PUBLIC",
-        "opensAt": "2027-01-20T19:00:00Z",
-        "closesAt": "2027-01-27T19:00:00Z",
-        "price": "0.0059",
-        "limit": 99
+        "opensAt": "2026-09-14T15:00:00Z",
+        "price": "0.0014",
+        "limit": 1
       }
-    ],
-    "note": "Every window here is the project's own published schedule. The one highlighted is yours.",
-    "url": "https://example.com"
+    ]
   },
   {
-    "code": "HOLD",
-    "name": "Holder Mint",
-    "eligibility": [
-      {
-        "via": "holds",
-        "collection": "bayc",
-        "min": 1,
-        "tier": "HOLDER"
-      }
-    ],
-    "startsAt": null,
-    "note": "Appears only for wallets that actually hold the collection, read from the chain on every load."
-  },
-  {
-    "code": "SOON",
-    "name": "Unannounced Drop",
+    "code": "PTHG",
+    "name": "Pathogen Lab",
     "eligibility": [
       {
         "via": "spots",
-        "list": "demo-gtd",
+        "list": "pathogen-gtd",
+        "tier": "GTD"
+      },
+      {
+        "via": "spots",
+        "list": "pathogen-fcfs",
+        "tier": "FCFS"
+      }
+    ],
+    "startsAt": "2026-09-15T13:00:00.000Z",
+    "note": "3,333 supply on Robinhood Chain, launching on OpenSea. Patient Zero 0.0012, GTD/FCFS 0.0013, public 0.0015. Winners are checked by hand against the comment you filed in #mint-proof.",
+    "url": "https://opensea.io/collection/pathogenlabio/overview",
+    "phases": [
+      {
+        "tier": "GTD",
+        "opensAt": "2026-09-15T13:00:00.000Z",
+        "price": "0.0013",
+        "limit": 1
+      },
+      {
+        "tier": "FCFS",
+        "opensAt": "2026-09-15T13:00:00.000Z",
+        "price": "0.0013",
+        "limit": 1
+      }
+    ]
+  },
+  {
+    "code": "TOAD",
+    "name": "Toadstools",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "toadstools-spots",
         "tier": "GTD"
       }
     ],
     "startsAt": null,
-    "note": "No date announced. The board says TBD rather than inventing one."
+    "note": "420 free Ordinals on Bitcoin, every inscription ending 70ad on a Nakamoto sat. Delivery needs a taproot address starting bc1p — a bc1q segwit address cannot hold an inscription.",
+    "url": "https://x.com/toadstools_btc"
+  },
+  {
+    "code": "HWLV",
+    "name": "Hood Wolves",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "hoodwolves-spots",
+        "tier": "GTD"
+      }
+    ],
+    "startsAt": null,
+    "note": "The Ape Cubz evolution by Deebs. Robinhood Chain, launching through Unvault — no date announced yet. Holding 2 Ape Cubz is a guaranteed wolf on their own terms, separate from the spot you hold here.",
+    "url": "https://x.com/rhoodwolves"
+  },
+  {
+    "code": "PAWF",
+    "name": "Pawffle",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "pawffle-spots",
+        "tier": "GTD"
+      }
+    ],
+    "startsAt": null,
+    "note": "Cute felines touching grass. 3,333, Robinhood Chain. No date announced yet; they also hand out GTD spots to holders of eligible collections at pawffles.xyz.",
+    "url": "https://x.com/Pawffle_nft"
+  },
+  {
+    "code": "W3BF",
+    "name": "W3BFR0G",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "w3bfrog-og",
+        "tier": "OG"
+      },
+      {
+        "via": "spots",
+        "list": "w3bfrog-fcfs",
+        "tier": "FCFS"
+      }
+    ],
+    "startsAt": "2026-09-20T12:00:00Z",
+    "phases": [
+      {
+        "tier": "OG",
+        "opensAt": "2026-09-20T12:00:00Z",
+        "price": null,
+        "limit": 1
+      },
+      {
+        "tier": "GTD",
+        "opensAt": "2026-09-20T14:00:00Z",
+        "price": "0.0022",
+        "limit": 1
+      },
+      {
+        "tier": "FCFS",
+        "opensAt": "2026-09-20T16:00:00Z",
+        "price": "0.0022",
+        "limit": 10
+      },
+      {
+        "tier": "PUBLIC",
+        "opensAt": "2026-09-21T04:00:00Z",
+        "closesAt": "2026-09-28T16:00:00Z",
+        "price": "0.0059",
+        "limit": 99
+      }
+    ],
+    "note": "9,999 hand-drawn frogs on Ethereum. OG is free and capped at 1 per wallet; the first-come window is 0.0022 ETH and up to 10. Windows read off their mint contract on OpenSea.",
+    "url": "https://opensea.io/collection/w3bfr0g-541087095/overview",
+    "spotsDrawAt": "2026-09-14T20:43:44Z"
+  },
+  {
+    "code": "PGM",
+    "name": "Pharaoh God Mob",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "pgm-gtd",
+        "tier": "GTD"
+      },
+      {
+        "via": "spots",
+        "list": "pgm-fcfs",
+        "tier": "FCFS"
+      }
+    ],
+    "startsAt": null,
+    "note": "10K generative Gods on Robinhood Chain, built from 179 attributes. A FREE mint, whitelist only — their Godlist is guaranteed and their Moblist is first-come. No date announced yet.",
+    "url": "https://x.com/pharaohgodmob",
+    "spotsDrawAt": "2026-09-14T20:45:13Z"
+  },
+  {
+    "code": "FURN",
+    "name": "The Furnace",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "furnace-gtd",
+        "tier": "GTD"
+      },
+      {
+        "via": "spots",
+        "list": "furnace-fcfs",
+        "tier": "FCFS"
+      }
+    ],
+    "startsAt": null,
+    "spotsDrawAt": "2026-09-15T00:32:38Z",
+    "note": "3,232 pixel furnaces on Robinhood Chain. Each mint activates an ERC-6551 token-bound wallet tied to the NFT — sell the Furnace and the wallet and everything in it goes with it. Mint price and date not announced yet.",
+    "url": "https://x.com/Thefurnacexyz"
+  },
+  {
+    "code": "ASTR",
+    "name": "Astral Sentinels",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "astral-gtd",
+        "tier": "GTD"
+      }
+    ],
+    "startsAt": "2026-09-14T14:00:00Z",
+    "phases": [
+      {
+        "tier": "GTD",
+        "opensAt": "2026-09-14T14:00:00Z",
+        "price": "0.001",
+        "limit": 1
+      },
+      {
+        "tier": "PUBLIC",
+        "opensAt": "2026-09-14T14:00:00Z",
+        "price": "0.0016",
+        "limit": null
+      }
+    ],
+    "note": "4,444 code-drawn guardians on OpenSea. GTD and FCFS mint at 0.001 ETH, public at 0.0016. Check your phase on their own checker at astralsentinels.fun/whitelist.",
+    "url": "https://x.com/AstralSentinels"
   }
 ]

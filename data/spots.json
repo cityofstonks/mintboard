@@ -1,24 +1,347 @@
 {
-  "demo-gtd": {
-    "source": "Demo Drop, guaranteed tier, drawn 2026-01-01",
-    "expected": 2,
+  "astral-gtd": {
+    "source": "Astral Sentinels, 10 GTD spots. Flash first-10 in #key-masters 2026-09-14. 11 reacted; the 10 with a wallet on file took the seats.",
+    "expected": 10,
     "wallets": [
-      "0x1111111111111111111111111111111111111111"
+      "0x6d5005c404b8569bcd61979004c51b3390231a91",
+      "0x0ee77ca27a6669540afba76a420362b5e34de0f2",
+      "0x1fa83251e3773011b4ede627b1f16824c8fb8f2e",
+      "0x0006aed7b94d820d22ab1daaf38f998085aae1f7",
+      "0xf7d0080a40d8478bb0f8958573968486ee274845",
+      "0x64f7658e43ed0fbe7d0d761383879087ef427cd0",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x0e409c358160fd67bc3c1bd039df4b752f46ca44",
+      "0x48477b50818b75f4b4a5c86d5fcbb35d3c0fb14d",
+      "0x68f501d53b2afd52d21ac2dcc7aff561daba27d0"
+    ]
+  },
+  "furnace-fcfs": {
+    "source": "The Furnace, 15 first-come, key holders, drawn 2026-09-15",
+    "wallets": [
+      "0x39576596263f2f0a1805ea6106d74c7caea43337",
+      "0xc458fa60f966bd2348718f56e0bef77bd9d7ff84",
+      "0x27a11f92bbbd0faaa6aabba2495f903ae04123cc",
+      "0xcf0db123492c52f76df617bd88bc7bfe7d21d0a4",
+      "0xe6bb26d4038f320fd3fb7874d61c170251d91d0b",
+      "0x872c22005e452c5ae61a29f5525775474076a992",
+      "0xd1fad05bec0cc5d1baa98becf38e04e4f681ad17",
+      "0x6e4ec434353fe3a7d9d0b5e0ba4500d9945289df",
+      "0x0576feb0a20cf5879249bc62e812b7398a016b4c",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x4026881978d9985c42aa0e93112b98ea0e195419",
+      "0x656de0260b127e81b075b4e4dd2c68db610037d6",
+      "0x0dd260041d9e09a352c19f6c46ce80607604197c",
+      "0x4c1ec5d35e8c93ab2d3254e5ac1a794471b02061",
+      "0xe908df25a2ea728506e7226b735ab27d440b948e"
     ],
+    "expected": 15
+  },
+  "furnace-gtd": {
+    "source": "The Furnace, 10 guaranteed, Key Masters, drawn 2026-09-15",
+    "wallets": [
+      "0x48477b50818b75f4b4a5c86d5fcbb35d3c0fb14d",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0x46950f4ca9063716869a54c148dfb9160721ccbd",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0x4ec26258c9ac012d3f2becee83e0ebd81d799d79",
+      "0x585cc24ee9f9e8afec13a10ec10fbc709e19328f",
+      "0x524518d741daf7fb93aaa652b1eda9d002079cb7",
+      "0xe8123460c271b6b2164ec7897a15c446c591846b",
+      "0x0a591c55351ae0b214f80131266309270634de88",
+      "0x1fa83251e3773011b4ede627b1f16824c8fb8f2e"
+    ],
+    "expected": 10
+  },
+  "hoodwolves-spots": {
+    "source": "Hood Wolves, 10 WL spots, box drawn 2026-09-12 (ledger post)",
+    "wallets": [
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0xa8b76659d20ced2eeda27efad194ac757b238ec7",
+      "0x656de0260b127e81b075b4e4dd2c68db610037d6",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x46950f4ca9063716869a54c148dfb9160721ccbd",
+      "0x33eec22c845494d502d1f0728bfff3bec9631664",
+      "0xc45f8476e5f7ab7574a2c12d468f41540e53fdab",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47"
+    ],
+    "expected": 10
+  },
+  "pathogen-fcfs": {
+    "source": "Pathogen Lab, 30 first come first served, drawn 2026-09-09",
+    "wallets": [
+      "0x36bf631d56da4a38c0c010b5df091ae0b9b2a9d6",
+      "0x4b3a15a31ff8e15acd0276584cc643f73a55153d",
+      "0x71d6be89af83e77c76e834ec0874571ae1856e32",
+      "0xcf0db123492c52f76df617bd88bc7bfe7d21d0a4",
+      "0xe8123460c271b6b2164ec7897a15c446c591846b",
+      "0xfc4c5b7c6989fa79a7217f34daf368cadbf2a246",
+      "0x4ec26258c9ac012d3f2becee83e0ebd81d799d79",
+      "0x680f99536772c44919220ad71f4c29e4d46b5b66",
+      "0x9d2ad0ab4634f6c605e9dd410419bbe1aa039eee",
+      "0x27a11f92bbbd0faaa6aabba2495f903ae04123cc",
+      "0xdeee56ba4b7bb69be45741bb1ed3d791f26a691d",
+      "0x3cdad896b5601ca921812a98dab82eda5deca51e",
+      "0x5f987938c79cd090336cdc1e0f14d331d9c36a6a",
+      "0xdd5205ef7975a0b2da3dfc37796352f462173833",
+      "0x28f0388ff37f1fb607c032c44e57dcb77cdc7f10",
+      "0x8cf78c3cb5728cf66ececf6d33d37f9d6b4cc27a",
+      "0xd66121c92d766df54106d8f73b15eda256cedf24",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0xf7588adc6bf26ca9193246e2443e2cce89787987",
+      "0x395130c6144105d979277819173c65a282133020",
+      "0x389ef0f330bd149486d44c2171dfa5be2ba3f48d",
+      "0x56d0139ec69b1debc1ae062b118fde073a965396",
+      "0xbec3d0ebf7f034a3ea250e217274c51e982b28a5",
+      "0x28f1dd1c0322ab37fc92445c80cde829ad69a2ad",
+      "0x30e6f714511811eea180b1f3bdb47664d72ee7b5",
+      "0x019723b53ccadaab22cd48b3b29e2527aa695f64",
+      "0xe28105ec1d9e954c372042aac600834ff63e004b",
+      "0x64e312c515aba99bce849512b2d8b881633ccb79"
+    ],
+    "expected": 30,
     "needs": {
-      "message": "You have not filed your X comment yet. No handle on the sheet, no spot on their list.",
-      "wallets": [
-        "0x1111111111111111111111111111111111111111"
-      ]
+      "message": "You have not filed an X comment for Pathogen Lab. Their spots are checked by hand and no comment means no spot — follow @pathogenlabio, like and repost https://x.com/pathogenlabio/status/2096687534797472009, comment on it, then drop the link to YOUR comment in #mint-proof.",
+      "wallets": []
     }
   },
-  "demo-fcfs": {
-    "source": "Demo Drop, first-come tier, drawn 2026-01-01",
+  "pathogen-gtd": {
+    "source": "Pathogen Lab, 15 guaranteed, drawn 2026-09-09",
     "wallets": [
-      "0x2222222222222222222222222222222222222222"
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x88b27da125641f23dff691c7a0a1f726d1d41208",
+      "0xa8b76659d20ced2eeda27efad194ac757b238ec7",
+      "0x0ee77ca27a6669540afba76a420362b5e34de0f2",
+      "0x7e511f54154de2292cf93d08502f6ffa737bf230",
+      "0x4ac3b71de5de782afb382f50bb465092e281884b",
+      "0xc2f3351d5080484a12cbb98331d87022f6c755c0",
+      "0xdda4b61154558428233e1539b557c4fe6e4c86b7",
+      "0x524518d741daf7fb93aaa652b1eda9d002079cb7",
+      "0xc45f8476e5f7ab7574a2c12d468f41540e53fdab",
+      "0x585cc24ee9f9e8afec13a10ec10fbc709e19328f",
+      "0xb2d774119ba0f5bdc7e7ec76409af810aac3a3b0",
+      "0x8b9f0f3ef86d37063b547e395ab7b53522f782d2",
+      "0x46950f4ca9063716869a54c148dfb9160721ccbd",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47"
     ],
-    "delivery": {
-      "0x2222222222222222222222222222222222222222": "bc1pexampletaprootaddressgoeshere0000000000000000000000000000"
+    "expected": 15,
+    "needs": {
+      "message": "You have not filed an X comment for Pathogen Lab. Their spots are checked by hand and no comment means no spot — follow @pathogenlabio, like and repost https://x.com/pathogenlabio/status/2096687534797472009, comment on it, then drop the link to YOUR comment in #mint-proof.",
+      "wallets": []
     }
+  },
+  "pawffle-spots": {
+    "source": "Pawffle, 10 WL spots, box drawn 2026-09-12 (ledger post)",
+    "wallets": [
+      "0xa8b76659d20ced2eeda27efad194ac757b238ec7",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0x46950f4ca9063716869a54c148dfb9160721ccbd",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0xc45f8476e5f7ab7574a2c12d468f41540e53fdab",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47",
+      "0x656de0260b127e81b075b4e4dd2c68db610037d6"
+    ],
+    "expected": 10
+  },
+  "pgm-fcfs": {
+    "source": "Pharaoh God Mob, 50 first-come, key holders, drawn 2026-09-15",
+    "wallets": [
+      "0x4c1ec5d35e8c93ab2d3254e5ac1a794471b02061",
+      "0x27a11f92bbbd0faaa6aabba2495f903ae04123cc",
+      "0x64e312c515aba99bce849512b2d8b881633ccb79",
+      "0xcf0db123492c52f76df617bd88bc7bfe7d21d0a4",
+      "0xe908df25a2ea728506e7226b735ab27d440b948e",
+      "0xbe8601f02edbf8d9cfe90ccb3bb2f288cbab3d28",
+      "0xeedb50c86266c3ed96e99b01d30580e4be76e643",
+      "0x0dd260041d9e09a352c19f6c46ce80607604197c",
+      "0x4026881978d9985c42aa0e93112b98ea0e195419",
+      "0x7635cdb8b87ae795bdae4e47f8d8c696e2596755",
+      "0x0576feb0a20cf5879249bc62e812b7398a016b4c",
+      "0x97371d7b87e76ea1919e567e7c96b13f458499b2",
+      "0x656de0260b127e81b075b4e4dd2c68db610037d6",
+      "0xca5d62b5a0ff7a25d651cb8abaa4f88aeef9e8c6",
+      "0x395130c6144105d979277819173c65a282133020",
+      "0xb4adf3b632bc9231833f9c80c4dd4ef851c414e9",
+      "0x3990fd9f2e73a84234970cc96c66fcb55e48e295",
+      "0x872c22005e452c5ae61a29f5525775474076a992",
+      "0x4a6991da428fbc2884a0baabc9ecd5e4e3b28af0",
+      "0x01188b0f3f7ba7633fd9e3f023419da299b0bc91",
+      "0x88f5ec51b0a873bccbf4807999959bb0bb0ad145",
+      "0x0ee77ca27a6669540afba76a420362b5e34de0f2",
+      "0x0a591c55351ae0b214f80131266309270634de88",
+      "0x9ddd4203d22d8ea361a7120ad51dd62629fe751e",
+      "0x4d298d67c1d146f5061d4d2fdc55dd436fa1b60d",
+      "0xb920eb87566b1f92fa4e3fa29a45c7979548315a",
+      "0x28f0388ff37f1fb607c032c44e57dcb77cdc7f10",
+      "0xd7c9ce13e5280972ad00cd77508244b485061f9c",
+      "0x390d727c1fa341f9933bb795e89a9d0376811842",
+      "0xe6f7b0cd0728b8849f91e73ccf2dbc1da1dc120e",
+      "0x3cdad896b5601ca921812a98dab82eda5deca51e",
+      "0x9a4ec94abf39a508a2805228eefa4b8590158a74",
+      "0xd66121c92d766df54106d8f73b15eda256cedf24",
+      "0xd1fad05bec0cc5d1baa98becf38e04e4f681ad17",
+      "0xb6dbe193d0682e734c03a620beb103b4027c61c3",
+      "0xd71365a4a1238de94971eb5db9a57f85ae70d8e1",
+      "0xf7b188d84192e23049da2e659ddc2d79d7c85e1d",
+      "0x0429f4fd5279959ed83042a4095385300d86e396",
+      "0x28f1dd1c0322ab37fc92445c80cde829ad69a2ad",
+      "0x0ddd2458ed9146dcb95ea4dd0ae904e4a35621d5",
+      "0x6d5005c404b8569bcd61979004c51b3390231a91",
+      "0x794e7f7ee2599ab3c17e0ed0fd879331444fceac",
+      "0x6a6f9f58160925c8c937e390cded773c2042c896",
+      "0xdd5205ef7975a0b2da3dfc37796352f462173833",
+      "0x0e409c358160fd67bc3c1bd039df4b752f46ca44",
+      "0x4dcd462f48e760c01a02188f548fd2ad9211a6e8",
+      "0xf7d0080a40d8478bb0f8958573968486ee274845",
+      "0x33eec22c845494d502d1f0728bfff3bec9631664",
+      "0x94b4d1a7cf4d46e5f52c7f5b6e7e63926fbe6d73",
+      "0x680f99536772c44919220ad71f4c29e4d46b5b66"
+    ],
+    "expected": 50
+  },
+  "pgm-gtd": {
+    "source": "Pharaoh God Mob, 20 guaranteed, Key Masters, drawn 2026-09-14",
+    "wallets": [
+      "0x524518d741daf7fb93aaa652b1eda9d002079cb7",
+      "0x4ec26258c9ac012d3f2becee83e0ebd81d799d79",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47",
+      "0x7e511f54154de2292cf93d08502f6ffa737bf230",
+      "0xe6bb26d4038f320fd3fb7874d61c170251d91d0b",
+      "0x88b27da125641f23dff691c7a0a1f726d1d41208",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x4b359c79d56fffdc7736d894d6f4d4fe6b2257c7",
+      "0x1fa83251e3773011b4ede627b1f16824c8fb8f2e",
+      "0xe8123460c271b6b2164ec7897a15c446c591846b",
+      "0x39576596263f2f0a1805ea6106d74c7caea43337",
+      "0x48477b50818b75f4b4a5c86d5fcbb35d3c0fb14d",
+      "0xb59779634019e565eec112227d868a9080dc54a1",
+      "0x46950f4ca9063716869a54c148dfb9160721ccbd",
+      "0x13084c989933222ef3a29073be9ee6df1b8bb390",
+      "0xa332592a7324c733137a54b921cb55042aadbcfb",
+      "0x6e4ec434353fe3a7d9d0b5e0ba4500d9945289df",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0x12ed9271af86cfddc2895161fd3b568ccd1cb5ac"
+    ],
+    "expected": 20
+  },
+  "toadstools-spots": {
+    "source": "Toadstools, 20 spots to the room (12 Key Masters + 8 Key Holders) allocated 2026-09-11; 5 more went to the team. Delivery is to a taproot BTC address.",
+    "wallets": [
+      "0x0e409c358160fd67bc3c1bd039df4b752f46ca44",
+      "0x526f721015862330a30a4879ef1b914ef3ef3750",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0x0ace27eba543fcda9412039b309a321346d395fe",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x0ee77ca27a6669540afba76a420362b5e34de0f2",
+      "0xe8123460c271b6b2164ec7897a15c446c591846b",
+      "0x48477b50818b75f4b4a5c86d5fcbb35d3c0fb14d",
+      "0x7e511f54154de2292cf93d08502f6ffa737bf230",
+      "0x13084c989933222ef3a29073be9ee6df1b8bb390",
+      "0x585cc24ee9f9e8afec13a10ec10fbc709e19328f",
+      "0x88b27da125641f23dff691c7a0a1f726d1d41208",
+      "0xecd0f1916b7db5889381cb6874a04210671706d3",
+      "0x0576feb0a20cf5879249bc62e812b7398a016b4c",
+      "0x97371d7b87e76ea1919e567e7c96b13f458499b2",
+      "0x5df221ca0bb4ea60138be0ba78036394a08d00d9",
+      "0x28f0388ff37f1fb607c032c44e57dcb77cdc7f10"
+    ],
+    "expected": 20,
+    "needs": {
+      "message": "The Bitcoin address you dropped starts bc1q — that is segwit, and it CANNOT hold an inscription. Sending an ordinal to it can destroy it. Post a taproot address starting bc1p (Xverse, Unisat or Leather) in #wallet-drop before this mints.",
+      "wallets": []
+    },
+    "delivery": {
+      "0x0e409c358160fd67bc3c1bd039df4b752f46ca44": "bc1pzkyzvztga08gw327txw3wzxdn9c2fdvggquh7udk67j5sh76cclq9d5v46",
+      "0x526f721015862330a30a4879ef1b914ef3ef3750": "bc1pdqv9fsrys8pv4t8anyplnnvgnnyhjxgtulyqa3ghrzenpy035e0q02zkv8",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3": "bc1p2w3299ya04yupd0y5d82exnwwvhvaaqylwrctczuzk4uzz022myqgxwpjh",
+      "0x0ace27eba543fcda9412039b309a321346d395fe": "bc1p5n9p0gru5476nmn0mm6u53lln6jcshv96uf4mc0wqrhc2dlrccms5u7s2k",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be": "bc1plny67m9cpy39jnfl7jcpv46whdhdtm3ddfs2q376mpu543y9prksvt6ynw",
+      "0x0ee77ca27a6669540afba76a420362b5e34de0f2": "bc1pj7lpdsgky9yz0ulk8sze3dywk89xuvgp052vpklsgqmz8675068qx5rff4",
+      "0xe8123460c271b6b2164ec7897a15c446c591846b": "bc1pug3az5hl5k043q5uxru7cpt99sve7tcysfqppcsm89e73se5g0tquz3zqj",
+      "0x48477b50818b75f4b4a5c86d5fcbb35d3c0fb14d": "bc1pteu336aqz29tsvs9s9gjqp0anhypeanvnjgnuh44rklsl0cn8dvszr6std",
+      "0x7e511f54154de2292cf93d08502f6ffa737bf230": "bc1pzf2vyshqty0dps4ldsjc2wtx87s9zdhx8xyj5zmme8qp5a750lzq4pszsf",
+      "0x13084c989933222ef3a29073be9ee6df1b8bb390": "bc1pc62v2gnwzktph2mw4rwy29ulendyee63cx0y2yz53v0ljp2gj6dqga0pr3",
+      "0x585cc24ee9f9e8afec13a10ec10fbc709e19328f": "bc1pktld0k6456g7nvh5wv9vtz5nvdv7fw5fe8g8fuv5eu3w2rvef6hsrg08lp",
+      "0x88b27da125641f23dff691c7a0a1f726d1d41208": "bc1p4j29pzjf7eqtl8jfnk888k44qesz0m9r5zemm59tyqa60r7uaxhqs9msl6",
+      "0xecd0f1916b7db5889381cb6874a04210671706d3": "bc1p6ppkfta7kwwvhu2hrrdy0hrsdezx6d6dhmlcyyppgxw58ukvrpgqthnz0z",
+      "0x0576feb0a20cf5879249bc62e812b7398a016b4c": "bc1pjflxjpja45qfltpchnt8t4xhv7y9d9d669kq5cctpcqng2texh8qp4479e",
+      "0x97371d7b87e76ea1919e567e7c96b13f458499b2": "bc1ph6uuecc0vjf3r2p93jm0xh2f39l6r8mnqhfzu8g70mx83xhh32yqmgc0zq",
+      "0x5df221ca0bb4ea60138be0ba78036394a08d00d9": "bc1p0kf7qkhh9pd7luu24667ryclz26rjnrwnzxta72l88ff9wghtgdq0xchrg",
+      "0x28f0388ff37f1fb607c032c44e57dcb77cdc7f10": "bc1py7lf8xkfttpwkk2vtsw6dpeqq0phtslf475xlftxl3t7rjtywasstsz68a"
+    }
+  },
+  "w3bfrog-og": {
+    "source": "W3BFR0G, 10 OG spots, Key Masters, drawn 2026-09-14",
+    "wallets": [
+      "0x68f501d53b2afd52d21ac2dcc7aff561daba27d0",
+      "0x524518d741daf7fb93aaa652b1eda9d002079cb7",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0x48477b50818b75f4b4a5c86d5fcbb35d3c0fb14d",
+      "0x872c22005e452c5ae61a29f5525775474076a992",
+      "0x39576596263f2f0a1805ea6106d74c7caea43337",
+      "0x656de0260b127e81b075b4e4dd2c68db610037d6",
+      "0xb920eb87566b1f92fa4e3fa29a45c7979548315a"
+    ],
+    "expected": 10
+  },
+  "zorpians-fcfs": {
+    "source": "Zorpians, 25 first come first served, drawn in two passes 2026-09-12",
+    "wallets": [
+      "0xd1fad05bec0cc5d1baa98becf38e04e4f681ad17",
+      "0x4dcd462f48e760c01a02188f548fd2ad9211a6e8",
+      "0x4c1ec5d35e8c93ab2d3254e5ac1a794471b02061",
+      "0xd31ff648c628ced72faec5a6c728187a8c6e07eb",
+      "0xf604c2fa021e3016c3c0d08193e72566a30a11ff",
+      "0x59bf70f45981bbe676b30ca5b94e3c41008c31c7",
+      "0x27a11f92bbbd0faaa6aabba2495f903ae04123cc",
+      "0x9a4ec94abf39a508a2805228eefa4b8590158a74",
+      "0x68a9360e07a5fe96a2209a64fa486bb7b2df217b",
+      "0x7a5fff6406b5e66112fc55da125baa6f1cf501d6",
+      "0x680f99536772c44919220ad71f4c29e4d46b5b66",
+      "0xbe8601f02edbf8d9cfe90ccb3bb2f288cbab3d28",
+      "0x5f987938c79cd090336cdc1e0f14d331d9c36a6a",
+      "0x89d1829ef606dccab86ea06364b1d962d89e5015",
+      "0xf7b188d84192e23049da2e659ddc2d79d7c85e1d",
+      "0xcf0db123492c52f76df617bd88bc7bfe7d21d0a4",
+      "0x56d0139ec69b1debc1ae062b118fde073a965396",
+      "0xdd5205ef7975a0b2da3dfc37796352f462173833",
+      "0xd7c9ce13e5280972ad00cd77508244b485061f9c",
+      "0x395130c6144105d979277819173c65a282133020",
+      "0xd66121c92d766df54106d8f73b15eda256cedf24",
+      "0x4ec26258c9ac012d3f2becee83e0ebd81d799d79",
+      "0x28f1dd1c0322ab37fc92445c80cde829ad69a2ad",
+      "0x390d727c1fa341f9933bb795e89a9d0376811842",
+      "0xa2c1d28a0b32fc1ddf704226dcfbacd784fc0750"
+    ],
+    "expected": 25,
+    "needs": {
+      "message": "You have not filed an X comment for Zorpians. They need a username for every winner and your comment is the only place we read one — follow @zorpians, like and repost their pinned post, comment tagging @CityOfStonks, then drop the link in #mint-proof. No handle on the sheet, no spot on their list.",
+      "wallets": []
+    }
+  },
+  "zorpians-gtd": {
+    "source": "Zorpians, 15 guaranteed to Key Masters who filed, drawn 2026-09-12",
+    "wallets": [
+      "0x33eec22c845494d502d1f0728bfff3bec9631664",
+      "0x48477b50818b75f4b4a5c86d5fcbb35d3c0fb14d",
+      "0x64f7658e43ed0fbe7d0d761383879087ef427cd0",
+      "0xb920eb87566b1f92fa4e3fa29a45c7979548315a",
+      "0x04f65a67338c4ad149840cdb76962cc299bbe3be",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0x4ac3b71de5de782afb382f50bb465092e281884b",
+      "0xa8b76659d20ced2eeda27efad194ac757b238ec7",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0x656de0260b127e81b075b4e4dd2c68db610037d6",
+      "0x46950f4ca9063716869a54c148dfb9160721ccbd",
+      "0xe8123460c271b6b2164ec7897a15c446c591846b",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47",
+      "0xa332592a7324c733137a54b921cb55042aadbcfb",
+      "0xc45f8476e5f7ab7574a2c12d468f41540e53fdab"
+    ],
+    "expected": 15
   }
 }

@@ -47,28 +47,45 @@ const config: BoardConfig = {
   // highlighted phase — is mixed from them, so one change reskins the tool.
   accent: '#CCFF00',
   accent2: '#6EE7B7',
-  discordInvite: 'https://discord.gg/your-invite',
+  discordInvite: 'https://discord.gg/cityofstonks',
 
-  gate: null,
+  /*
+   * This deployment runs a real community's board.
+   *
+   * Mintboard is the tool; the data here is City of Stonks', live. A tool
+   * demonstrated on "Demo Drop" asks people to imagine it working — this one
+   * shows 232 wallets across nine mints, and anybody holding a key can paste
+   * their address and check the result against what they already know.
+   *
+   * A fresh clone replaces everything below and nothing above it.
+   */
+  gate: {
+    chain: 'robinhood',
+    contract: '0x1a37f894f92a0b5c9229aee30a72385ba0a1f355',
+    min: 1,
+    label: 'key holders',
+  },
 
   // Public endpoints, overridable with env vars so a busy community can point
   // at its own paid RPC without editing code. Add any EVM chain you need.
   chains: {
     ethereum: { rpc: process.env.RPC_ETHEREUM ?? 'https://ethereum-rpc.publicnode.com' },
     base: { rpc: process.env.RPC_BASE ?? 'https://mainnet.base.org' },
+    robinhood: { rpc: process.env.RPC_ROBINHOOD ?? 'https://rpc.mainnet.chain.robinhood.com' },
   },
 
   // Collections a mint can key off with a `holds` rule. The board reads
   // balanceOf against these and nothing else — it never scans a whole wallet,
   // so nobody can airdrop their way onto your board.
   collections: [
-    // Shipped as a working example so a fresh clone reads a real chain on the
-    // first run. Replace with your own — the board only ever reads balanceOf
-    // against what is listed here.
-    {
-      id: 'bayc', name: 'Bored Ape Yacht Club', chain: 'ethereum',
-      contract: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d',
-    },
+    { id: 'stonkbrokers', name: 'Stonk Brokers', chain: 'robinhood',
+      contract: '0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0' },
+    { id: 'zorpians', name: 'Zorpians', chain: 'robinhood',
+      contract: '0xfc02048498b65040a4e21a2eba54cfc48846e2ad' },
+    { id: 'cannacats', name: 'CannaCats', chain: 'robinhood',
+      contract: '0x289c8ce652f38029867842048068b39bd0464a3f' },
+    { id: 'wifoutlaws', name: 'WIF Outlaws', chain: 'robinhood',
+      contract: '0x12a4c7659a4b7c4a2870b5167c4f8b014c7fa690' },
   ],
 }
 

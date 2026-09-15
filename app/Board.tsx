@@ -115,7 +115,10 @@ export default function Board({ embed = false }: { embed?: boolean }) {
             placeholder="0x… check a wallet for spots you have won" aria-label="wallet address" />
           <button type="submit" disabled={busy} aria-busy={busy}>{busy ? 'Reading…' : 'Check my spots'}</button>
         </form>
-        <p className="note">Read-only. Nothing is signed and nothing is stored.</p>
+        <p className="note">
+          Read-only. Nothing is signed, nothing is stored, and no wallet is connected — this reads
+          public chain data and a list of winners, nothing else.
+        </p>
         {/*
           * Without this a screen reader user pastes a wallet, the page swaps
           * its whole contents, and nothing is announced — the board appears to
@@ -186,9 +189,11 @@ export default function Board({ embed = false }: { embed?: boolean }) {
 
         {data && !data.locked && !data.error && rows.length === 0 && (
           <div className="empty" style={{ marginTop: 16 }}>
-            <strong>No mints on your board yet.</strong><br />
-            This only ever lists mints you can actually enter — spots you were drawn, or mints
-            you qualify for by holding something.
+            <strong>Nothing on your board yet.</strong><br />
+            This only ever lists mints <em>you</em> can enter — a spot you were drawn, or one you
+            qualify for by holding something. An empty board is an answer, not a failure: it means
+            no open mint currently has your name on it. The opportunities above are open to
+            everyone who qualifies for them.
           </div>
         )}
 

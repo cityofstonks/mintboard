@@ -31,7 +31,7 @@ const RULES = [
     k: 'What they still owe',
     v: `Won a spot but never filed the comment the project asked for? Posted a Bitcoin address that
         cannot hold an inscription? That row sorts above everything else, because it is the only one
-        that expires.`,
+        that expires — and a spot nobody claims goes back to the project.`,
   },
 ]
 
@@ -51,12 +51,17 @@ export default function Landing() {
           Every holder sees <span>only the mints they can enter</span>
         </h1>
         <p className="lede" style={{ fontSize: 18, maxWidth: '58ch' }}>
-          {config.name} is a mint board for NFT communities. Holders paste an address — nothing
-          signed, nothing stored — and get the spots they hold, the tier, the reason, and a countdown
-          to their own window. You get to stop answering &ldquo;am I on the list?&rdquo; forty times a day.
+          A holder pastes an address — nothing signed, nothing stored — and gets the spots they
+          hold, the tier, the reason, and a countdown to <em>their</em> window rather than the
+          public one. You stop answering &ldquo;am I on the list?&rdquo; forty times a day.
+        </p>
+        <p className="lede" style={{ maxWidth: '58ch', marginTop: 14 }}>
+          The board below is <strong>live, not a demo</strong> — it is City of Stonks&rsquo; own,
+          running 232 wallets across nine mints. Paste a key holder&rsquo;s address and check it
+          against what you already know.
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '28px 0 0' }}>
-          <a className="btn" href="/board">See a live board</a>
+          <a className="btn" href="/board">Check a wallet</a>
           <a className="btn" href="/guide" style={{
             background: 'var(--glass)', color: 'var(--ink)', border: '1px solid var(--edge)',
             boxShadow: 'none', backdropFilter: 'blur(12px)',
