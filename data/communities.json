@@ -2,7 +2,7 @@
   {
     "id": "city-of-stonks",
     "name": "City of Stonks",
-    "icon": "🗝",
+    "icon": "\ud83d\udddd",
     "x": "CityOfStonks",
     "discord": "https://discord.gg/cityofstonks",
     "opensea": "https://opensea.io/collection/cityofstonks",
@@ -11,7 +11,13 @@
   {
     "id": "ccff00",
     "name": "CCFF00",
-    "icon": "🟩",
-    "blurb": "Robinhood Chain. No opportunities announced for CCFF00 holders yet — this is where they will appear."
+    "icon": "\ud83d\udfe9",
+    "blurb": "Robinhood Chain. No opportunities announced for CCFF00 holders yet \u2014 this is where they will appear."
+  },
+  {
+    "id": "cannacats",
+    "name": "CannaCats",
+    "icon": "\ud83d\udc31",
+    "blurb": "Robinhood Chain. The best-held allocation this board has given out \u2014 half their wallets still hold the key they minted, and 31% went on to buy more."
   }
 ]
