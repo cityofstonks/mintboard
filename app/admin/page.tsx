@@ -25,6 +25,8 @@ export default function Admin() {
   /** Whether approval can actually reach Discord. */
   const [routing, setRouting] = useState(false)
   const [providers, setProviders] = useState<string[]>([])
+  /** Who is signed in, for the banner and the sign-out button. */
+  const [me, setMe] = useState<string | null>(null)
   const [passwordOn, setPasswordOn] = useState(true)
   const [draft, setDraft] = useState<RaffleEntry>(blank())
   const [msg, setMsg] = useState('')
@@ -43,8 +45,13 @@ export default function Admin() {
       if (ar.ok) { const a = await ar.json(); setProviders(a.providers ?? []); setPasswordOn(Boolean(a.password)) }
     } catch { /* the password form still works */ }
 
+    try {
+      const mr = await fetch('/api/auth/me')
+      if (mr.ok) setMe((await mr.json()).identity ?? null)
+    } catch { /* the banner is not worth failing a load over */ }
+
     const r = await fetch('/api/admin/raffles')
-    if (r.status === 401) { setAuthed(false); return }
+    if (r.status === 401) { setAuthed(false); setMe(null); return }
     const d = await r.json()
     setList(d.raffles ?? []); setMode(d.mode ?? ''); setAuthed(true)
     const pr = await fetch('/api/partners')
@@ -99,6 +106,11 @@ export default function Admin() {
     setBusy(false)
     setMsg(r.ok ? 'Removed.' : (d.error ?? 'Could not remove.'))
     void load()
+  }
+
+  async function signOut() {
+    await fetch('/api/auth/me', { method: 'DELETE' }).catch(() => {})
+    window.location.href = '/'
   }
 
   async function decide(id: string, status: Partner['status'], raffle?: { gtd: number; fcfs: number; hours: number }) {
@@ -195,6 +207,15 @@ export default function Admin() {
         Anything you save here is written straight to your repo as a commit, so the history of
         who changed which raffle is kept for you.
       </p>
+      {me && (
+        <p className="note" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: -4 }}>
+          Signed in as <b style={{ color: 'var(--ink)' }}>{me}</b>
+          <button type="button" onClick={signOut} style={{
+            background: 'none', color: 'var(--faint)', boxShadow: 'none',
+            padding: '4px 8px', fontSize: 12.5,
+          }}>Sign out</button>
+        </p>
+      )}
 
       {mode === 'readonly' && (
         <p className="warn" style={{ marginTop: 14 }}>
