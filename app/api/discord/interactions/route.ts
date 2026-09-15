@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import {
   verifyInteraction, PING, PONG, MESSAGE_COMPONENT, MODAL_SUBMIT,
   CHANNEL_MESSAGE, MODAL, EPHEMERAL,
@@ -10,17 +10,35 @@ import { balanceOf } from '@/lib/chain'
 export const dynamic = 'force-dynamic'
 
 /**
- * Every button press in every server lands here.
+ * Every button press in every server lands here, and there are three seconds
+ * to answer before Discord gives up and shows "did not respond in time".
  *
- * Discord POSTs the interaction and waits three seconds for a reply. That
- * budget is the shape of this file: verify, read one or two rows, answer. A
- * chain read can blow it, so eligibility is checked against the balance
- * recorded at entry where it can be, and re-checked properly at the draw —
- * which is the only place it has to be exactly right anyway.
+ * THAT BUDGET IS THE WHOLE ARCHITECTURE, and the first version got it wrong:
+ * it looked up the raffle and the wallet before deciding what the press even
+ * was, so opening a modal cost two database round trips on top of a cold
+ * start. A modal CANNOT be deferred — it is the immediate reply or nothing —
+ * so that path now touches nothing.
+ *
+ * Everything slower defers first and finishes afterwards. Discord shows a
+ * thinking state, and the real answer replaces it when the chain comes back.
  */
+
+/** Deferred, ephemeral. Discord shows "thinking" only to the presser. */
+const DEFERRED = 5
 
 const reply = (content: string) =>
   NextResponse.json({ type: CHANNEL_MESSAGE, data: { content, flags: EPHEMERAL } })
+
+const thinking = () => NextResponse.json({ type: DEFERRED, data: { flags: EPHEMERAL } })
+
+/** Replace the thinking state with the real answer. */
+async function finish(appId: string, token: string, content: string) {
+  await fetch(`https://discord.com/api/v10/webhooks/${appId}/${token}/messages/@original`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ content }),
+  }).catch(() => { /* the presser sees the thinking state stall; nothing else breaks */ })
+}
 
 interface Raffle {
   id: string; project: string; status: string; closes_at: string | null
@@ -28,8 +46,8 @@ interface Raffle {
 }
 
 export async function POST(req: Request) {
-  // The RAW body, before any parsing. Re-serialising a parsed object changes
-  // the bytes and the signature will not match what Discord signed.
+  // The RAW body, before parsing. Re-serialising changes the bytes and the
+  // signature no longer matches what Discord signed.
   const raw = await req.text()
   const ok = verifyInteraction(
     raw,
@@ -37,133 +55,145 @@ export async function POST(req: Request) {
     req.headers.get('x-signature-timestamp') ?? '',
     (process.env.DISCORD_PUBLIC_KEY ?? '').trim(),
   )
-  // 401 exactly — Discord's endpoint check requires a bad signature to be
-  // rejected, and will not save the URL otherwise.
   if (!ok) return new NextResponse('bad signature', { status: 401 })
 
   const body = JSON.parse(raw) as {
-    type: number
+    type: number; application_id: string; token: string
     data?: { custom_id?: string; components?: { components?: { custom_id?: string; value?: string }[] }[] }
     member?: { user?: { id: string; username: string } }
     user?: { id: string; username: string }
   }
 
   if (body.type === PING) return NextResponse.json({ type: PONG })
-  if (!dbReady()) return reply('This board is not finished being set up yet.')
 
   const user = body.member?.user ?? body.user
   if (!user?.id) return reply('Could not tell who you are.')
-
-  // ── a wallet arriving from the modal ────────────────────────────────────
-  if (body.type === MODAL_SUBMIT && body.data?.custom_id?.startsWith('wallet:')) {
-    const value = body.data.components?.[0]?.components?.[0]?.value ?? ''
-    const wallet = value.trim().toLowerCase()
-    if (!/^0x[0-9a-f]{40}$/.test(wallet)) {
-      return reply('That is not a wallet address — `0x`, then 40 characters.')
-    }
-    await upsert('bot_wallets', { discord_user_id: user.id, wallet, set_at: new Date().toISOString() }, 'discord_user_id')
-    return reply(`Saved \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\`. Press **Enter** again and you are in.`)
-  }
-
-  if (body.type !== MESSAGE_COMPONENT) return reply('Not something I know how to do.')
-
   const [action, raffleId] = (body.data?.custom_id ?? '').split(':')
-  if (!raffleId) return reply('That button has lost track of its raffle.')
 
-  const raffle = (await select<Raffle[]>(
-    `bot_raffles?id=eq.${encodeURIComponent(raffleId)}&limit=1`))?.[0]
-  if (!raffle) return reply('That raffle no longer exists.')
-
-  const p = { ...DEFAULTS, ...(raffle.params ?? {}) }
-  const wallet = (await select<{ wallet: string }[]>(
-    `bot_wallets?discord_user_id=eq.${user.id}&limit=1`))?.[0]?.wallet ?? null
-
-  // ── add or change a wallet ──────────────────────────────────────────────
-  if (action === 'wallet') {
+  // ── the modal: answered with zero work ──────────────────────────────────
+  // No database, no config read, nothing that can be slow. A modal has to be
+  // the immediate response, so this branch sits above every other check —
+  // including dbReady, which is a cheap env read but still one more thing
+  // between the press and the window opening.
+  if (body.type === MESSAGE_COMPONENT && action === 'wallet') {
     return NextResponse.json({
       type: MODAL,
       data: {
-        custom_id: `wallet:${raffleId}`, title: 'Your wallet',
+        custom_id: `wallet:${raffleId ?? 'none'}`, title: 'Your wallet',
         components: [{
           type: 1,
           components: [{
-            type: 4, custom_id: 'address', style: 1, label: 'Where a spot would be delivered',
+            type: 4, custom_id: 'address', style: 1,
+            label: 'Where a spot would be delivered',
             placeholder: '0x…', min_length: 42, max_length: 42, required: true,
-            value: wallet ?? '',
           }],
         }],
       },
     })
   }
 
-  const closed = raffle.status !== 'open'
-    || (raffle.closes_at ? Date.parse(raffle.closes_at) <= Date.now() : false)
+  if (!dbReady()) return reply('This board is not finished being set up yet.')
 
-  // ── how am I doing ──────────────────────────────────────────────────────
-  if (action === 'tickets') {
-    const mine = (await select<{ held_at_entry: number; boosted: boolean }[]>(
-      `bot_entries?raffle_id=eq.${encodeURIComponent(raffleId)}&discord_user_id=eq.${user.id}&limit=1`))?.[0]
-    const count = (await select<{ discord_user_id: string }[]>(
-      `bot_entries?raffle_id=eq.${encodeURIComponent(raffleId)}&select=discord_user_id`))?.length ?? 0
-    if (!mine) {
-      return reply(`You are **not in** ${raffle.project} yet. ${count} ${count === 1 ? 'person is' : 'people are'} in.`)
+  // ── a wallet coming back from the modal ─────────────────────────────────
+  if (body.type === MODAL_SUBMIT && action === 'wallet') {
+    const value = body.data?.components?.[0]?.components?.[0]?.value ?? ''
+    const wallet = value.trim().toLowerCase()
+    if (!/^0x[0-9a-f]{40}$/.test(wallet)) {
+      return reply('That is not a wallet address — `0x`, then 40 characters.')
     }
-    const t = ticketsFor(mine.held_at_entry, mine.boosted, p)
-    return reply(
-      `**${raffle.project}** — you are in with **${t} ticket${t === 1 ? '' : 's'}**`
-      + ` (held ${mine.held_at_entry}${mine.boosted ? `, boosted ×${p.boost}` : ''}).`
-      + `\n${count} ${count === 1 ? 'person' : 'people'} in so far.`
-      + `\nNo entrant can exceed **${Math.round(p.capShare * 100)}%** of the pool, so this is a ceiling on your odds, not a promise.`)
+    after(async () => {
+      try {
+        await upsert('bot_wallets',
+          { discord_user_id: user.id, wallet, set_at: new Date().toISOString() }, 'discord_user_id')
+        await finish(body.application_id, body.token,
+          `Saved \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\`. Press **Enter** and you are in.`)
+      } catch {
+        await finish(body.application_id, body.token,
+          'Could not save that just now. Try again in a moment — nothing was recorded.')
+      }
+    })
+    return thinking()
   }
 
-  // ── enter ───────────────────────────────────────────────────────────────
-  if (action === 'enter') {
-    if (closed) return reply(`**${raffle.project}** has closed. Nothing more to do.`)
-    if (!wallet) {
-      return reply('You need a wallet on file first — press **Add my wallet**.'
-        + '\nA spot that cannot be delivered is not a spot, so this is checked now rather than chased after you have won.')
-    }
+  if (body.type !== MESSAGE_COMPONENT) return reply('Not something I know how to do.')
+  if (!raffleId) return reply('That button has lost track of its raffle.')
 
-    let held = 0
-    if (raffle.chain && raffle.contract) {
-      const n = await balanceOf(raffle.chain, raffle.contract, wallet)
-      /*
-       * null is UNREADABLE, never zero.
-       *
-       * Recording an unreadable balance as 0 would enter somebody at the base
-       * ticket and they would never know their holdings had been missed. Far
-       * better to refuse and let them press again.
-       */
-      if (n === null) {
-        return reply('Could not read the chain just now, so I will not guess at your holdings. Press **Enter** again in a moment.')
-      }
-      held = n
-    }
-
+  // ── everything below reads the chain or the database, so it defers ──────
+  after(async () => {
+    const say = (m: string) => finish(body.application_id, body.token, m)
     try {
-      await insert('bot_entries', {
-        raffle_id: raffleId, discord_user_id: user.id, wallet,
-        held_at_entry: held, boosted: false,
-      }, 'return=minimal')
-    } catch (e) {
-      // The primary key does the work: a double-tap is one entry.
-      if (/duplicate|already exists|23505/i.test(String(e))) {
-        const t = ticketsFor(held, false, p)
-        return reply(`You are already in **${raffle.project}** with **${t} ticket${t === 1 ? '' : 's'}**.`)
+      const raffle = (await select<Raffle[]>(
+        `bot_raffles?id=eq.${encodeURIComponent(raffleId)}&limit=1`))?.[0]
+      if (!raffle) return say('That raffle no longer exists.')
+
+      const p = { ...DEFAULTS, ...(raffle.params ?? {}) }
+      const wallet = (await select<{ wallet: string }[]>(
+        `bot_wallets?discord_user_id=eq.${user.id}&limit=1`))?.[0]?.wallet ?? null
+
+      const closed = raffle.status !== 'open'
+        || (raffle.closes_at ? Date.parse(raffle.closes_at) <= Date.now() : false)
+
+      if (action === 'tickets') {
+        const mine = (await select<{ held_at_entry: number; boosted: boolean }[]>(
+          `bot_entries?raffle_id=eq.${encodeURIComponent(raffleId)}&discord_user_id=eq.${user.id}&limit=1`))?.[0]
+        const count = (await select<{ discord_user_id: string }[]>(
+          `bot_entries?raffle_id=eq.${encodeURIComponent(raffleId)}&select=discord_user_id`))?.length ?? 0
+        if (!mine) {
+          return say(`You are **not in** ${raffle.project} yet. ${count} ${count === 1 ? 'person is' : 'people are'} in.`)
+        }
+        const t = ticketsFor(mine.held_at_entry, mine.boosted, p)
+        return say(
+          `**${raffle.project}** — you are in with **${t} ticket${t === 1 ? '' : 's'}**`
+          + ` (holding ${mine.held_at_entry}${mine.boosted ? `, boosted ×${p.boost}` : ''}).`
+          + `\n${count} ${count === 1 ? 'person' : 'people'} in so far.`
+          + `\nNobody can exceed **${Math.round(p.capShare * 100)}%** of the pool — a ceiling on your odds, not a promise.`)
       }
-      throw e
+
+      if (action !== 'enter') return say('Not something I know how to do.')
+      if (closed) return say(`**${raffle.project}** has closed. Nothing more to do.`)
+      if (!wallet) {
+        return say('You need a wallet on file first — press **Add my wallet**.'
+          + '\nA spot that cannot be delivered is not a spot, so this is checked now rather than chased after you have won.')
+      }
+
+      let held = 0
+      if (raffle.chain && raffle.contract) {
+        const n = await balanceOf(raffle.chain, raffle.contract, wallet)
+        // null is UNREADABLE, never zero. Entering somebody at the base
+        // ticket when they hold thirty is a loss they would never see.
+        if (n === null) {
+          return say('Could not read the chain just now, so I will not guess at your holdings. Press **Enter** again in a moment.')
+        }
+        held = n
+      }
+
+      try {
+        await insert('bot_entries', {
+          raffle_id: raffleId, discord_user_id: user.id, wallet,
+          held_at_entry: held, boosted: false,
+        }, 'return=minimal')
+      } catch (e) {
+        // The primary key does the work: a double-tap is one entry.
+        if (/duplicate|already exists|23505/i.test(String(e))) {
+          const t = ticketsFor(held, false, p)
+          return say(`You are already in **${raffle.project}** with **${t} ticket${t === 1 ? '' : 's'}**.`)
+        }
+        throw e
+      }
+
+      const t = ticketsFor(held, false, p)
+      const extra = raffle.boost_ask
+        ? `\n\nWant more? ${raffle.boost_ask} — a ×${p.boost} boost, and entirely optional.`
+        : ''
+      return say(
+        `**You are in — ${raffle.project}.**\n`
+        + `**${t} ticket${t === 1 ? '' : 's'}** · holding ${held}`
+        + `${held >= p.holdCap ? ` (counting stops at ${p.holdCap})` : ''}\n`
+        + `Delivering to \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\`.${extra}`)
+    } catch {
+      await say('Something went wrong on our side. Nothing was recorded — try again.')
     }
+  })
 
-    const t = ticketsFor(held, false, p)
-    const line = raffle.boost_ask
-      ? `\n\nWant more? ${raffle.boost_ask} — that is a ×${p.boost} boost, and it is optional.`
-      : ''
-    return reply(
-      `**You are in — ${raffle.project}.**\n`
-      + `**${t} ticket${t === 1 ? '' : 's'}** · holding ${held}`
-      + `${held >= p.holdCap ? ` (counting stops at ${p.holdCap})` : ''}\n`
-      + `Delivering to \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\`.${line}`)
-  }
-
-  return reply('Not something I know how to do.')
+  return thinking()
 }
