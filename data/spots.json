@@ -391,17 +391,6 @@
       "0x68f501d53b2afd52d21ac2dcc7aff561daba27d0"
     ]
   },
-  "mixels-fcfs": {
-    "source": "Mixels, 5 spots for Key Holders \u2014 Key Masters were not in this tier.",
-    "expected": 5,
-    "wallets": [
-      "0x3cf08dce10c22d7a09eaaf33472c3af233b27685",
-      "0xb37fe18b1b6c21845fbf13c367a3daa2135ff0a8",
-      "0x4a6991da428fbc2884a0baabc9ecd5e4e3b28af0",
-      "0xd66121c92d766df54106d8f73b15eda256cedf24",
-      "0x27a11f92bbbd0faaa6aabba2495f903ae04123cc"
-    ]
-  },
   "mixels-team": {
     "source": "Mixels, 5 from the team allocation. Not community winners; counted so the total reads 25.",
     "expected": 5,
@@ -411,6 +400,17 @@
       "0x4b0a7223ad976dfcae9c8e825b017b3ad90b1d04",
       "0xce95649fd2905667df8a50c2ad4d5d816344b2df",
       "0x1debdd02fa1036389a4e81422ba8e9b1b4243c3e"
+    ]
+  },
+  "mixels-holders": {
+    "source": "Mixels, 5 spots for Key Holders \u2014 Key Masters were not in this tier.",
+    "expected": 5,
+    "wallets": [
+      "0x3cf08dce10c22d7a09eaaf33472c3af233b27685",
+      "0xb37fe18b1b6c21845fbf13c367a3daa2135ff0a8",
+      "0x4a6991da428fbc2884a0baabc9ecd5e4e3b28af0",
+      "0xd66121c92d766df54106d8f73b15eda256cedf24",
+      "0x27a11f92bbbd0faaa6aabba2495f903ae04123cc"
     ]
   }
 }

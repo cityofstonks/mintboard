@@ -225,7 +225,7 @@
       },
       {
         "via": "spots",
-        "list": "mixels-fcfs",
+        "list": "mixels-holders",
         "tier": "FCFS"
       },
       {
