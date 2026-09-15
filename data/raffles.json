@@ -17,8 +17,8 @@
         "drawn": false
       }
     ],
-    "homework": "Follow, repost and comment \u2014 then file the link in your proof channel.",
-    "note": "Delete this entry and add your own. Closed raffles drop off the board on their own.",
+    "homework": "Follow, repost and comment — then file the link in your proof channel.",
+    "note": "Reading live from GitHub. Delete this entry and add your own.",
     "enterUrl": "https://discord.gg/your-invite",
     "kind": "raffle"
   },
@@ -36,6 +36,6 @@
       }
     ],
     "url": "https://theproject.xyz/claim",
-    "note": "A claim has no draw and no deadline \u2014 leave the closing time blank and it stays up until it fills. Delete this entry and add your own."
+    "note": "A claim has no draw and no deadline — leave the closing time blank and it stays up until it fills. Delete this entry and add your own."
   }
 ]
