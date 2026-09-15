@@ -17,7 +17,16 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
 const TOKEN = (process.env.DISCORD_BOT_TOKEN ?? '').trim()
-const BOARD = `${(process.env.SITE_URL ?? 'https://mintboard-pi.vercel.app').replace(/\/$/, '')}/theboard`
+/*
+ * Where a winner is sent to check their wallet.
+ *
+ * This pointed at the Mintboard deployment, which has no /theboard — the page
+ * lives on the community's own site. The announcement would have handed every
+ * winner a 404 at the exact moment they went looking for confirmation, and
+ * nothing in a build or a test would have caught a URL that is only ever
+ * printed into a message.
+ */
+const BOARD = (process.env.BOARD_URL ?? 'https://cityofstonks.com/theboard').replace(/\/$/, '')
 
 interface Row {
   id: string; project: string; guild_id: string; channel_id: string
