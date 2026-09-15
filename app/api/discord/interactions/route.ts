@@ -7,6 +7,7 @@ import { ticketsFor, DEFAULTS, type Params } from '@/lib/tickets'
 import { select, insert, upsert, update, rest, dbReady } from '@/lib/db'
 import { balanceOf } from '@/lib/chain'
 import { VERIFY_ADDRESS, verifyReady, blockNow, findProof, walletsOf, ownerOf } from '@/lib/verify'
+import { claimExpired, CLAIM_MINUTES } from '@/lib/claim'
 import { syncTiers, canAssignRoles, type Tier } from '@/lib/roles'
 import { sweep } from '@/app/api/cron/close/route'
 
@@ -307,7 +308,7 @@ export async function POST(req: Request) {
           + `\`${VERIFY_ADDRESS}\`\n\n`
           + 'Zero value is fine — the point is that it came from your wallet, not what it carried.'
           + ' Nothing is connected and nothing is signed.\n\n'
-          + 'Then press **I have sent it**.')
+          + `Then press **I have sent it**. This claim is good for ${CLAIM_MINUTES} minutes.`)
       } catch {
         await say('Could not start that just now. Nothing was recorded — try again.')
       }
@@ -345,9 +346,16 @@ export async function POST(req: Request) {
         }
 
         // vcheck — did the proof land?
-        const pending = (await select<{ id: string; wallet: string; from_block: number }[]>(
-          `verify_requests?discord_user_id=eq.${user.id}&status=eq.pending&order=requested_at.desc&limit=1`))?.[0]
+        const pending = (await select<{ id: string; wallet: string; from_block: number; requested_at: string }[]>(
+          `verify_requests?discord_user_id=eq.${user.id}&status=eq.pending`
+          + `&select=id,wallet,from_block,requested_at&order=requested_at.desc&limit=1`))?.[0]
         if (!pending) return say('Nothing waiting. Press **Verify a wallet** to start.')
+
+        if (claimExpired(pending.requested_at)) {
+          await update(`verify_requests?id=eq.${pending.id}`, { status: 'expired' })
+          return say(`That claim has run out — they last ${CLAIM_MINUTES} minutes.`
+            + '\nPress **Verify a wallet** again and send the transaction after you do.')
+        }
 
         const found = await findProof(KEYS_CHAIN, pending.wallet, pending.from_block)
         if (!found.ok) {
