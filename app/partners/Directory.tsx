@@ -25,11 +25,15 @@ export default function Directory() {
   if (list === null) return <div className="empty">Loading…</div>
   if (!list.length) {
     return (
-      <div className="empty">
-        <strong>No collections listed yet.</strong>
+      <div className="empty" style={{ textAlign: 'left' }}>
+        <strong style={{ color: 'var(--ink)' }}>No collections listed yet — be the first.</strong>
         <p className="note" style={{ margin: '8px 0 0' }}>
-          Projects appear here once an operator has approved them — nothing shows up unchecked.
+          This is where projects with a mint coming list what they can offer, so communities
+          running boards come to them instead of the other way round. Nothing appears until an
+          operator has checked it against the project&rsquo;s own account, which is why an empty
+          list is better than a list you cannot trust.
         </p>
+        <a className="btn" href="#apply" style={{ marginTop: 14 }}>List your collection</a>
       </div>
     )
   }

@@ -1,17 +1,1 @@
-[
-  {
-    "id": "demoguardians-sample",
-    "name": "Demo Guardians",
-    "handle": "YourProjectHere",
-    "chain": "Ethereum",
-    "supply": 4444,
-    "mintAt": "2027-02-14T18:00:00Z",
-    "offer": "50 GTD and 100 FCFS",
-    "requirements": "Follow, repost and comment on the pinned post",
-    "url": "https://example.com",
-    "contact": "discord: yourname",
-    "note": "Sample row. Approve or remove it from /admin, and delete this entry once you have real ones.",
-    "status": "approved",
-    "submittedAt": "2026-01-01T00:00:00Z"
-  }
-]
+[]
