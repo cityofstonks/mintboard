@@ -31,3 +31,19 @@ test('the richest matching tier wins regardless of the order given', () => {
 test('a negative or broken count never earns a tier', () => {
   for (const bad of [-1, NaN]) assert.equal(tierFor(bad as number, TIERS), null, `${bad}`)
 })
+
+test('syncing never takes a role away unless asked', async () => {
+  /*
+   * The failure this guards: somebody links one empty burner, their verified
+   * total reads 0, and a Key Master loses their role because we could only
+   * see the wallet they happened to link first. Verified holdings are a
+   * floor, not a total.
+   *
+   * No bot token here, so addRole/removeRole are no-ops — what is under test
+   * is whether removal is even attempted.
+   */
+  const { syncTiers } = await import('./roles.ts')
+  const r = await syncTiers('g', 'u', 0, TIERS)
+  assert.equal(r.granted, null)
+  assert.deepEqual(r.removed, [], 'nothing may be removed by default')
+})

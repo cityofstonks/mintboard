@@ -193,7 +193,7 @@ export async function POST(req: Request) {
           components: [{
             type: 4, custom_id: 'address', style: 1,
             label: 'The wallet to unlink',
-            placeholder: 'Paste it in full. Your roles are recalculated after.',
+            placeholder: 'Paste it in full. Roles you already hold are not taken away.',
             min_length: 42, max_length: 42, required: true,
           }],
         }],
@@ -383,10 +383,9 @@ export async function POST(req: Request) {
           return say(`**Unlinked.** ${left.length} wallet${left.length === 1 ? '' : 's'} left.`
             + ' Press **Resync** shortly to bring your roles in line.')
         }
-        const { granted, removed } = await syncTiers(guildId, user.id, held, KEY_TIERS)
+        const { granted } = await syncTiers(guildId, user.id, held, KEY_TIERS)
         return say(`**Unlinked.** **${held}** across ${left.length} wallet${left.length === 1 ? '' : 's'}.\n`
-          + (granted ? `You are **${granted.name}**.` : 'No tier left.')
-          + (removed.length ? ` Removed: ${removed.join(', ')}.` : ''))
+          + (granted ? `You are **${granted.name}**.` : 'That leaves no linked keys — but nothing was taken away.'))
       } catch {
         await say('Could not do that just now. Nothing changed — try again.')
       }
@@ -486,7 +485,7 @@ export async function POST(req: Request) {
           if (!canAssignRoles()) return say(`You hold **${held}** across ${mine.length} wallet${mine.length === 1 ? '' : 's'}, but I cannot set roles here yet.`)
           const { granted, removed } = await syncTiers(guildId, user.id, held, KEY_TIERS)
           return say(`**${held} key${held === 1 ? '' : 's'}** across ${mine.length} wallet${mine.length === 1 ? '' : 's'}.\n`
-            + (granted ? `You are **${granted.name}**.` : 'That is not enough for a role yet.')
+            + (granted ? `You are **${granted.name}**.` : 'That is not enough for a role yet — link another wallet if you hold elsewhere.')
             + (removed.length ? `\nRemoved: ${removed.join(', ')}.` : ''))
         }
 

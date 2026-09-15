@@ -44,18 +44,34 @@ export async function removeRole(guildId: string, userId: string, roleId: string
 /**
  * Bring somebody's roles in line with what they hold.
  *
- * Adds the tier they have earned and removes the ones they have not. A holder
- * who sold down keeps nothing they are no longer entitled to — but a FAILED
- * READ must never reach here as zero, or a chain hiccup strips the room.
+ * GRANTING ONLY, unless somebody deliberately asks otherwise.
+ *
+ * This is the whole reason the function is careful. A verified balance is a
+ * FLOOR, not a total: we can only ever see the wallets a person chose to
+ * link, so somebody who verifies one empty burner looks exactly like somebody
+ * who sold everything. Revoking on that reading would strip a Key Master who
+ * simply has not linked their cold wallet yet — the same mistake as every
+ * other bug here, a count we could not complete being reported as a count
+ * of zero.
+ *
+ * Taking a role away is also the one action in this system that costs
+ * somebody something, which makes it the one that should never happen as a
+ * side effect. When holdings really do need reconciling, that is a deliberate
+ * sweep somebody runs on purpose — `revoke: true` — not a thing a button does
+ * quietly on the way past.
  */
 export async function syncTiers(
   guildId: string, userId: string, held: number, tiers: Tier[],
+  { revoke = false } = {},
 ): Promise<{ granted: Tier | null; removed: string[] }> {
   const earned = tierFor(held, tiers)
   const removed: string[] = []
-  for (const t of tiers) {
-    if (earned && t.roleId === earned.roleId) continue
-    if (await removeRole(guildId, userId, t.roleId)) removed.push(t.name)
+
+  if (revoke) {
+    for (const t of tiers) {
+      if (earned && t.roleId === earned.roleId) continue
+      if (await removeRole(guildId, userId, t.roleId)) removed.push(t.name)
+    }
   }
   if (earned) await addRole(guildId, userId, earned.roleId)
   return { granted: earned, removed }
