@@ -1,6 +1,7 @@
 import config from '@/mintboard.config'
 import type { Metadata } from 'next'
 import Opportunities from './Opportunities'
+import HeroDemo from './HeroDemo'
 import spots from '@/data/spots.json'
 import mints from '@/data/mints.json'
 import type { SpotList, MintEntry } from '@/lib/types'
@@ -64,7 +65,8 @@ const STEPS = [
 export default function Landing() {
   return (
     <main>
-      <section className="wrap" style={{ paddingTop: 'clamp(48px, 12vh, 120px)', paddingBottom: 40 }}>
+      <section className="wrap hero" style={{ paddingTop: 'clamp(40px, 9vh, 92px)', paddingBottom: 40 }}>
+       <div>
         <p className="code" style={{ marginBottom: 18 }}>OPEN SOURCE · MIT · NO DATABASE</p>
         <h1 style={{ maxWidth: '16ch' }}>
           Every holder sees <span>only the mints they can enter</span>
@@ -86,12 +88,15 @@ export default function Landing() {
             boxShadow: 'none', backdropFilter: 'blur(12px)',
           }}>Put one on your site</a>
         </div>
+       </div>
+       {/* The product, running. The right half of this section used to be empty. */}
+       <HeroDemo />
       </section>
 
       <Opportunities />
 
       <section className="wrap" style={{ paddingTop: 0, paddingBottom: 40 }}>
-        <div className="cards">
+        <div className="rules">
           {RULES.map(r => (
             <article className="card" key={r.k}>
               <h3 style={{ fontSize: 17 }}>{r.k}</h3>
