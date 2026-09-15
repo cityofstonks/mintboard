@@ -34,39 +34,6 @@
     "endedAt": "2026-09-14T17:00:00.000Z"
   },
   {
-    "code": "PTHG",
-    "name": "Pathogen Lab",
-    "eligibility": [
-      {
-        "via": "spots",
-        "list": "pathogen-gtd",
-        "tier": "GTD"
-      },
-      {
-        "via": "spots",
-        "list": "pathogen-fcfs",
-        "tier": "FCFS"
-      }
-    ],
-    "startsAt": "2026-09-15T13:00:00.000Z",
-    "note": "3,333 supply on Robinhood Chain, launching on OpenSea. Patient Zero 0.0012, GTD/FCFS 0.0013, public 0.0015. Winners are checked by hand against the comment you filed in #mint-proof.",
-    "url": "https://opensea.io/collection/pathogenlabio/overview",
-    "phases": [
-      {
-        "tier": "GTD",
-        "opensAt": "2026-09-15T13:00:00.000Z",
-        "price": "0.0013",
-        "limit": 1
-      },
-      {
-        "tier": "FCFS",
-        "opensAt": "2026-09-15T13:00:00.000Z",
-        "price": "0.0013",
-        "limit": 1
-      }
-    ]
-  },
-  {
     "code": "TOAD",
     "name": "Toadstools",
     "eligibility": [
