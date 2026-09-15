@@ -25,11 +25,49 @@ export const dynamic = 'force-dynamic'
 
 /** Deferred, ephemeral. Discord shows "thinking" only to the presser. */
 const DEFERRED = 5
+/**
+ * Acknowledge a button without changing anything yet.
+ *
+ * The reason this is used instead of DEFERRED for Enter: after a type 6, the
+ * interaction's "original message" IS the raffle post, so it can be edited
+ * with the interaction token alone. No bot token has to live in this
+ * deployment to keep a live count on the board.
+ */
+const DEFERRED_UPDATE = 6
 
 const reply = (content: string) =>
   NextResponse.json({ type: CHANNEL_MESSAGE, data: { content, flags: EPHEMERAL } })
 
 const thinking = () => NextResponse.json({ type: DEFERRED, data: { flags: EPHEMERAL } })
+const acknowledge = () => NextResponse.json({ type: DEFERRED_UPDATE })
+
+/** Edit the message the button is attached to. */
+async function editPost(appId: string, token: string, content: string) {
+  await fetch(`https://discord.com/api/v10/webhooks/${appId}/${token}/messages/@original`, {
+    method: 'PATCH', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ content }),
+  }).catch(() => { /* a stale count is not worth failing an entry over */ })
+}
+
+/** A private message to the presser, separate from the post. */
+async function whisper(appId: string, token: string, content: string) {
+  await fetch(`https://discord.com/api/v10/webhooks/${appId}/${token}`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ content, flags: EPHEMERAL }),
+  }).catch(() => {})
+}
+
+/**
+ * The line at the bottom of the post that moves.
+ *
+ * Tickets rather than just a head count, because the head count alone is
+ * misleading in a weighted draw: forty entrants where one holds the cap is a
+ * different race from forty holding one key each.
+ */
+const liveLine = (people: number, tickets: number) =>
+  people === 0
+    ? '\n\n— **nobody in yet.** Be first.'
+    : `\n\n— **${people} in · ${tickets} tickets in the pool.**`
 
 /** Replace the thinking state with the real answer. */
 async function finish(appId: string, token: string, content: string) {
@@ -43,7 +81,7 @@ async function finish(appId: string, token: string, content: string) {
 interface Raffle {
   id: string; project: string; status: string; closes_at: string | null
   params: Params; chain: string | null; contract: string | null
-  boost_ask: string | null; boost_url: string | null
+  boost_ask: string | null; boost_url: string | null; post_body: string | null
 }
 
 export async function POST(req: Request) {
@@ -176,8 +214,14 @@ export async function POST(req: Request) {
   if (!raffleId) return reply('That button has lost track of its raffle.')
 
   // ── everything below reads the chain or the database, so it defers ──────
+  const isEnter = action === 'enter'
   after(async () => {
-    const say = (m: string) => finish(body.application_id, body.token, m)
+    // Enter acknowledged the post (type 6), so @original is the raffle
+    // message and the private answer has to be a separate followup. The other
+    // actions deferred an ephemeral reply, so @original IS that reply.
+    const say = (m: string) => isEnter
+      ? whisper(body.application_id, body.token, m)
+      : finish(body.application_id, body.token, m)
     try {
       const raffle = (await select<Raffle[]>(
         `bot_raffles?id=eq.${encodeURIComponent(raffleId)}&limit=1`))?.[0]
@@ -234,11 +278,14 @@ export async function POST(req: Request) {
       } catch (e) {
         // The primary key does the work: a double-tap is one entry.
         if (/duplicate|already exists|23505/i.test(String(e))) {
+          await repaint(raffle, body.application_id, body.token, p)
           const t = ticketsFor(held, false, p, isBooster)
           return say(`You are already in **${raffle.project}** with **${t} ticket${t === 1 ? '' : 's'}**.`)
         }
         throw e
       }
+
+      await repaint(raffle, body.application_id, body.token, p)
 
       const t = ticketsFor(held, false, p, isBooster)
       const extra = raffle.boost_ask
@@ -255,5 +302,23 @@ export async function POST(req: Request) {
     }
   })
 
-  return thinking()
+  return isEnter ? acknowledge() : thinking()
+}
+
+/**
+ * Recount and repaint the post.
+ *
+ * Every entrant's tickets are recomputed from their recorded holdings rather
+ * than summed from a stored figure, so the pool shown is the pool the draw
+ * will use. A cached total that drifts from the ledger would be worse than no
+ * total at all.
+ */
+async function repaint(raffle: Raffle, appId: string, token: string, p: Params) {
+  if (!raffle.post_body) return
+  try {
+    const rows = await select<{ held_at_entry: number; boosted: boolean; booster: boolean }[]>(
+      `bot_entries?raffle_id=eq.${encodeURIComponent(raffle.id)}&select=held_at_entry,boosted,booster`) ?? []
+    const tickets = rows.reduce((a, r) => a + ticketsFor(r.held_at_entry, r.boosted, p, r.booster), 0)
+    await editPost(appId, token, raffle.post_body + liveLine(rows.length, tickets))
+  } catch { /* the count can be a moment stale; the entry cannot be lost */ }
 }
