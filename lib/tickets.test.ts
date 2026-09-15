@@ -71,3 +71,33 @@ test('asking for more winners than entrants returns everybody, not a crash', () 
 test('an empty pool draws nobody rather than throwing', () => {
   assert.deepEqual(draw([], 5, 'x'), [])
 })
+
+test('boosting the server is worth a fifth more', () => {
+  assert.equal(ticketsFor(5, false, DEFAULTS), 6)
+  assert.equal(ticketsFor(5, false, DEFAULTS, true), 7)   // 6 × 1.2 = 7.2 → 7
+})
+
+test('the two boosts stack', () => {
+  // Engagement AND boosting the server: 6 × 1.5 × 1.2 = 10.8 → 11.
+  assert.equal(ticketsFor(5, true, DEFAULTS, true), 11)
+  assert.ok(ticketsFor(5, true, DEFAULTS, true) > ticketsFor(5, true, DEFAULTS))
+  assert.ok(ticketsFor(5, true, DEFAULTS, true) > ticketsFor(5, false, DEFAULTS, true))
+})
+
+test('a booster still cannot beat the cap', () => {
+  const entrants = [{ id: 'whale', held: 500, boosted: true, booster: true }]
+  for (let i = 0; i < 9; i++) entrants.push({ id: `m${i}`, held: 0, boosted: false, booster: false })
+  const rows = weigh(entrants, DEFAULTS)
+  const total = rows.reduce((a, r) => a + r.tickets, 0)
+  const whale = rows.find(r => r.id === 'whale')!
+  assert.ok(whale.tickets <= Math.ceil(total * DEFAULTS.capShare) + 1,
+    `booster whale holds ${whale.tickets} of ${total}`)
+})
+
+test('a raffle opened before boosterMult existed does not break', () => {
+  // Old rows have no boosterMult in their frozen params. Missing must mean
+  // "no multiplier", not NaN — one NaN poisons the whole pool.
+  const old = { base: 1, perToken: 1, holdCap: 10, boost: 1.5, capShare: 0.1 } as unknown as typeof DEFAULTS
+  const t = ticketsFor(5, false, old, true)
+  assert.ok(Number.isFinite(t) && t === 6)
+})

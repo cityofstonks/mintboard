@@ -4,7 +4,7 @@ import {
   CHANNEL_MESSAGE, MODAL, EPHEMERAL,
 } from '@/lib/discordVerify'
 import { ticketsFor, DEFAULTS, type Params } from '@/lib/tickets'
-import { select, insert, upsert, dbReady } from '@/lib/db'
+import { select, insert, upsert, update, dbReady } from '@/lib/db'
 import { balanceOf } from '@/lib/chain'
 
 export const dynamic = 'force-dynamic'
@@ -42,7 +42,8 @@ async function finish(appId: string, token: string, content: string) {
 
 interface Raffle {
   id: string; project: string; status: string; closes_at: string | null
-  params: Params; chain: string | null; contract: string | null; boost_ask: string | null
+  params: Params; chain: string | null; contract: string | null
+  boost_ask: string | null; boost_url: string | null
 }
 
 export async function POST(req: Request) {
@@ -60,7 +61,11 @@ export async function POST(req: Request) {
   const body = JSON.parse(raw) as {
     type: number; application_id: string; token: string
     data?: { custom_id?: string; components?: { components?: { custom_id?: string; value?: string }[] }[] }
-    member?: { user?: { id: string; username: string } }
+    member?: {
+      user?: { id: string; username: string }
+      /** Discord sets this for anybody boosting the server. No role to configure. */
+      premium_since?: string | null
+    }
     user?: { id: string; username: string }
   }
 
@@ -68,6 +73,9 @@ export async function POST(req: Request) {
 
   const user = body.member?.user ?? body.user
   if (!user?.id) return reply('Could not tell who you are.')
+  // Reported by Discord on the interaction itself — nothing to look up, and
+  // nothing a community has to configure correctly.
+  const isBooster = Boolean(body.member?.premium_since)
   const [action, raffleId] = (body.data?.custom_id ?? '').split(':')
 
   // ── the modal: answered with zero work ──────────────────────────────────
@@ -86,6 +94,24 @@ export async function POST(req: Request) {
             type: 4, custom_id: 'address', style: 1,
             label: 'Where a spot would be delivered',
             placeholder: '0x…', min_length: 42, max_length: 42, required: true,
+          }],
+        }],
+      },
+    })
+  }
+
+  // Claiming the engagement boost. Also a modal, also answered with no work.
+  if (body.type === MESSAGE_COMPONENT && action === 'boost') {
+    return NextResponse.json({
+      type: MODAL,
+      data: {
+        custom_id: `boost:${raffleId ?? 'none'}`, title: 'Claim the boost',
+        components: [{
+          type: 1,
+          components: [{
+            type: 4, custom_id: 'proof', style: 1,
+            label: 'Link to your comment or repost',
+            placeholder: 'https://x.com/you/status/…', min_length: 12, max_length: 300, required: true,
           }],
         }],
       },
@@ -115,6 +141,37 @@ export async function POST(req: Request) {
     return thinking()
   }
 
+  if (body.type === MODAL_SUBMIT && action === 'boost') {
+    const link = (body.data?.components?.[0]?.components?.[0]?.value ?? '').trim()
+    if (!/^https:\/\/(?:x|twitter)\.com\/[^\s]+\/status\/\d+/i.test(link)) {
+      return reply('That needs to be a link to your own post — `https://x.com/you/status/…`.')
+    }
+    after(async () => {
+      const say = (m: string) => finish(body.application_id, body.token, m)
+      try {
+        /*
+         * Recorded, NOT granted.
+         *
+         * boosted stays false until somebody checks the link actually belongs
+         * to this person and says what it should. Granting the multiplier on
+         * submission would mean everybody pastes anything and the boost stops
+         * meaning anything — which is worse than not offering one.
+         */
+        const rows = await update<unknown[]>(
+          `bot_entries?raffle_id=eq.${encodeURIComponent(raffleId)}&discord_user_id=eq.${user.id}`,
+          { boost_proof: link.slice(0, 300) })
+        if (!rows || (Array.isArray(rows) && rows.length === 0)) {
+          return say('You are not in this one yet — press **Enter** first, then claim the boost.')
+        }
+        await say('**Filed.** It is checked before the draw, and the boost lands then —'
+          + ' your ticket count will not change until somebody has looked at it.')
+      } catch {
+        await say('Could not file that just now. Nothing was recorded — try again.')
+      }
+    })
+    return thinking()
+  }
+
   if (body.type !== MESSAGE_COMPONENT) return reply('Not something I know how to do.')
   if (!raffleId) return reply('That button has lost track of its raffle.')
 
@@ -134,17 +191,19 @@ export async function POST(req: Request) {
         || (raffle.closes_at ? Date.parse(raffle.closes_at) <= Date.now() : false)
 
       if (action === 'tickets') {
-        const mine = (await select<{ held_at_entry: number; boosted: boolean }[]>(
+        const mine = (await select<{ held_at_entry: number; boosted: boolean; booster: boolean }[]>(
           `bot_entries?raffle_id=eq.${encodeURIComponent(raffleId)}&discord_user_id=eq.${user.id}&limit=1`))?.[0]
         const count = (await select<{ discord_user_id: string }[]>(
           `bot_entries?raffle_id=eq.${encodeURIComponent(raffleId)}&select=discord_user_id`))?.length ?? 0
         if (!mine) {
           return say(`You are **not in** ${raffle.project} yet. ${count} ${count === 1 ? 'person is' : 'people are'} in.`)
         }
-        const t = ticketsFor(mine.held_at_entry, mine.boosted, p)
+        const t = ticketsFor(mine.held_at_entry, mine.boosted, p, mine.booster)
         return say(
           `**${raffle.project}** — you are in with **${t} ticket${t === 1 ? '' : 's'}**`
-          + ` (holding ${mine.held_at_entry}${mine.boosted ? `, boosted ×${p.boost}` : ''}).`
+          + ` (holding ${mine.held_at_entry}`
+          + `${mine.boosted ? `, engagement ×${p.boost}` : ''}`
+          + `${mine.booster ? `, server booster ×${p.boosterMult}` : ''}).`
           + `\n${count} ${count === 1 ? 'person' : 'people'} in so far.`
           + `\nNobody can exceed **${Math.round(p.capShare * 100)}%** of the pool — a ceiling on your odds, not a promise.`)
       }
@@ -170,25 +229,26 @@ export async function POST(req: Request) {
       try {
         await insert('bot_entries', {
           raffle_id: raffleId, discord_user_id: user.id, wallet,
-          held_at_entry: held, boosted: false,
+          held_at_entry: held, boosted: false, booster: isBooster,
         }, 'return=minimal')
       } catch (e) {
         // The primary key does the work: a double-tap is one entry.
         if (/duplicate|already exists|23505/i.test(String(e))) {
-          const t = ticketsFor(held, false, p)
+          const t = ticketsFor(held, false, p, isBooster)
           return say(`You are already in **${raffle.project}** with **${t} ticket${t === 1 ? '' : 's'}**.`)
         }
         throw e
       }
 
-      const t = ticketsFor(held, false, p)
+      const t = ticketsFor(held, false, p, isBooster)
       const extra = raffle.boost_ask
-        ? `\n\nWant more? ${raffle.boost_ask} — a ×${p.boost} boost, and entirely optional.`
+        ? `\n\nWant more? ${raffle.boost_ask} — a ×${p.boost} boost. Press **Claim the boost** when you have.`
         : ''
       return say(
         `**You are in — ${raffle.project}.**\n`
         + `**${t} ticket${t === 1 ? '' : 's'}** · holding ${held}`
-        + `${held >= p.holdCap ? ` (counting stops at ${p.holdCap})` : ''}\n`
+        + `${held >= p.holdCap ? ` (counting stops at ${p.holdCap})` : ''}`
+        + `${isBooster ? ` · server booster ×${p.boosterMult}` : ''}\n`
         + `Delivering to \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\`.${extra}`)
     } catch {
       await say('Something went wrong on our side. Nothing was recorded — try again.')

@@ -16,14 +16,23 @@ export interface Params {
   holdCap: number
   /** Multiplier for anybody who did the optional thing and was verified. */
   boost: number
+  /**
+   * Multiplier for people boosting the Discord server.
+   *
+   * Discord reports this itself on every interaction — `member.premium_since`
+   * is set for a booster — so there is no role to configure and nothing for a
+   * community to get wrong. It stacks with the engagement boost: doing both
+   * is worth more than either, which is the point of rewarding both.
+   */
+  boosterMult: number
   /** No entrant may exceed this share of the whole pool. */
   capShare: number
 }
 
-export const DEFAULTS: Params = { base: 1, perToken: 1, holdCap: 10, boost: 1.5, capShare: 0.10 }
+export const DEFAULTS: Params = { base: 1, perToken: 1, holdCap: 10, boost: 1.5, boosterMult: 1.2, capShare: 0.10 }
 
 /** One entrant's raw tickets, before the pool-wide cap. */
-export function ticketsFor(held: number, boosted: boolean, p: Params): number {
+export function ticketsFor(held: number, boosted: boolean, p: Params, booster = false): number {
   /*
    * A non-finite holding is not zero holdings.
    *
@@ -35,13 +44,14 @@ export function ticketsFor(held: number, boosted: boolean, p: Params): number {
    */
   const safe = Number.isFinite(held) ? held : 0
   const counted = Math.min(Math.max(0, Math.floor(safe)), p.holdCap)
-  const raw = (p.base + p.perToken * counted) * (boosted ? p.boost : 1)
+  const mult = (boosted ? p.boost : 1) * (booster ? (p.boosterMult ?? 1) : 1)
+  const raw = (p.base + p.perToken * counted) * mult
   // Whole tickets. A fractional ticket cannot be drawn and would only ever
   // introduce rounding somebody could argue with.
   return Math.max(1, Math.round(raw))
 }
 
-export interface Entrant { id: string; held: number; boosted: boolean }
+export interface Entrant { id: string; held: number; boosted: boolean; booster?: boolean }
 export interface Weighted { id: string; tickets: number; capped: boolean }
 
 /**
@@ -55,7 +65,7 @@ export interface Weighted { id: string; tickets: number; capped: boolean }
  */
 export function weigh(entrants: Entrant[], p: Params): Weighted[] {
   const rows: Weighted[] = entrants.map(e => ({
-    id: e.id, tickets: ticketsFor(e.held, e.boosted, p), capped: false,
+    id: e.id, tickets: ticketsFor(e.held, e.boosted, p, e.booster === true), capped: false,
   }))
   if (rows.length < 2 || p.capShare <= 0 || p.capShare >= 1) return rows
 
