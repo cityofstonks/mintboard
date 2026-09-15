@@ -23,6 +23,10 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080 HOSTNAME=0.0.0.0
 RUN addgroup -g 1001 -S nodejs && adduser -S next -u 1001
 COPY --from=build --chown=next:nodejs /app/.next/standalone ./
 COPY --from=build --chown=next:nodejs /app/.next/static ./.next/static
+# The scheduled machine runs out of this image too. Next's trace only covers
+# what the server imports, so anything run as its own command has to be copied
+# deliberately or the machine boots and immediately cannot find it.
+COPY --from=build --chown=next:nodejs /app/scripts ./scripts
 # No public/ directory in this repo — favicon and icons are app-router files,
 # which the standalone trace already carries. A COPY of a path that does not
 # exist fails the build outright rather than being skipped.
