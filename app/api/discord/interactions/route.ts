@@ -6,7 +6,7 @@ import {
 import { ticketsFor, DEFAULTS, type Params } from '@/lib/tickets'
 import { select, insert, upsert, update, rest, dbReady } from '@/lib/db'
 import { balanceOf } from '@/lib/chain'
-import { VERIFY_ADDRESS, verifyReady, blockNow, findProof, walletsOf, ownerOf } from '@/lib/verify'
+import { VERIFY_ADDRESS, verifyReady, blockNow, checkProof, walletsOf, ownerOf } from '@/lib/verify'
 import { claimExpired, CLAIM_MINUTES } from '@/lib/claim'
 import { syncTiers, canAssignRoles, type Tier } from '@/lib/roles'
 import { sweep } from '@/app/api/cron/close/route'
@@ -201,6 +201,27 @@ export async function POST(req: Request) {
     })
   }
 
+  // "I have sent it" now asks which transaction. The hash is the one thing
+  // only the sender has to hand the moment they send, and it turns an
+  // eighteen-thousand-block hunt into a single lookup.
+  if (body.type === MESSAGE_COMPONENT && action === 'vcheck') {
+    return NextResponse.json({
+      type: MODAL,
+      data: {
+        custom_id: 'vcheck:go', title: 'Confirm your transaction',
+        components: [{
+          type: 1,
+          components: [{
+            type: 4, custom_id: 'hash', style: 1,
+            label: 'Transaction hash',
+            placeholder: '0x… — your wallet shows it the moment you send',
+            min_length: 66, max_length: 66, required: true,
+          }],
+        }],
+      },
+    })
+  }
+
   // Verification. The modal is answered with no work, same reason as the rest.
   if (body.type === MESSAGE_COMPONENT && action === 'verify') {
     return NextResponse.json({
@@ -373,7 +394,74 @@ export async function POST(req: Request) {
     return thinking()
   }
 
-  if (body.type === MESSAGE_COMPONENT && (action === 'vcheck' || action === 'vwallets' || action === 'vresync')) {
+  if (body.type === MODAL_SUBMIT && action === 'vcheck') {
+    const hash = (body.data?.components?.[0]?.components?.[0]?.value ?? '').trim().toLowerCase()
+    after(async () => {
+      const say = (m: string) => finish(body.application_id, body.token, m)
+      try {
+        const pending = (await select<{ id: string; wallet: string; from_block: number; requested_at: string }[]>(
+          `verify_requests?discord_user_id=eq.${user.id}&status=eq.pending`
+          + `&select=id,wallet,from_block,requested_at&order=requested_at.desc&limit=1`))?.[0]
+        if (!pending) return say('Nothing waiting. Press **Verify a wallet** to start.')
+
+        if (claimExpired(pending.requested_at)) {
+          await update(`verify_requests?id=eq.${pending.id}`, { status: 'expired' })
+          return say(`That claim has run out — they last ${CLAIM_MINUTES} minutes.`
+            + '\nPress **Verify a wallet** again, then send the transaction.')
+        }
+
+        const found = await checkProof(KEYS_CHAIN, pending.wallet, hash, pending.from_block)
+        if (!found.ok) {
+          // Each of these is a different problem with a different fix, so
+          // each gets its own sentence. One flat "no" sends people off to
+          // resend transactions that were never the issue.
+          const why = {
+            unreadable: 'Could not reach the chain just now — I will not tell you it is wrong when I cannot look. Press the button again shortly.',
+            'not-found': 'No transaction with that hash. Check you copied the whole thing.',
+            pending: 'That transaction has not been mined yet. Give it a moment and press again.',
+            'wrong-sender': `That came from a different wallet. It has to be sent **from** \`${pending.wallet.slice(0, 8)}…${pending.wallet.slice(-6)}\`.`,
+            'wrong-target': `That was not sent to the verify address. It has to go to \`${VERIFY_ADDRESS}\`.`,
+            'too-early': 'That transaction is older than your claim. Send a new one now that the claim is open — an old transaction proves the wallet acted, not that you are the one who acted.',
+          }[found.why]
+          return say(why)
+        }
+
+        // A hash can only ever be spent once. Without this, a transaction
+        // sitting in public could be pasted by whoever reads it first.
+        const used = await select<{ wallet: string }[]>(
+          `verified_wallets?tx_hash=eq.${found.txHash}&select=wallet&limit=1`)
+        if (used.length && used[0].wallet !== pending.wallet) {
+          return say('That transaction has already been used to verify a wallet. Send a new one.')
+        }
+
+        await update(`verify_requests?id=eq.${pending.id}`,
+          { status: 'verified', verified_at: new Date().toISOString(), tx_hash: found.txHash })
+        await upsert('verified_wallets', {
+          wallet: pending.wallet, discord_user_id: user.id, guild_id: guildId,
+          tx_hash: found.txHash, verified_at: new Date().toISOString(), unlinked_at: null,
+        }, 'wallet')
+
+        const mine = await walletsOf(user.id)
+        let held = 0, blind = false
+        for (const w of mine) {
+          const n = await balanceOf(KEYS_CHAIN, KEYS_CONTRACT, w.wallet)
+          if (n === null) { blind = true; break }
+          held += n
+        }
+        if (blind) return say('**Verified.** Could not read your balance right now — press **Resync** in a moment for your role.')
+        if (!canAssignRoles()) return say(`**Verified.** You hold **${held}**, but I cannot set roles here yet.`)
+        const { granted } = await syncTiers(guildId, user.id, held, KEY_TIERS)
+        return say(`**Verified.** \`${pending.wallet.slice(0, 8)}…${pending.wallet.slice(-6)}\` is yours.\n`
+          + `**${held} key${held === 1 ? '' : 's'}** across ${mine.length} wallet${mine.length === 1 ? '' : 's'}. `
+          + (granted ? `You are **${granted.name}**.` : 'Not enough for a role yet — add another wallet if you hold elsewhere.'))
+      } catch {
+        await say('Something went wrong on our side. Nothing changed — try again.')
+      }
+    })
+    return thinking()
+  }
+
+  if (body.type === MESSAGE_COMPONENT && (action === 'vwallets' || action === 'vresync')) {
     after(async () => {
       const say = (m: string) => finish(body.application_id, body.token, m)
       try {
@@ -402,46 +490,6 @@ export async function POST(req: Request) {
             + (removed.length ? `\nRemoved: ${removed.join(', ')}.` : ''))
         }
 
-        // vcheck — did the proof land?
-        const pending = (await select<{ id: string; wallet: string; from_block: number; requested_at: string }[]>(
-          `verify_requests?discord_user_id=eq.${user.id}&status=eq.pending`
-          + `&select=id,wallet,from_block,requested_at&order=requested_at.desc&limit=1`))?.[0]
-        if (!pending) return say('Nothing waiting. Press **Verify a wallet** to start.')
-
-        if (claimExpired(pending.requested_at)) {
-          await update(`verify_requests?id=eq.${pending.id}`, { status: 'expired' })
-          return say(`That claim has run out — they last ${CLAIM_MINUTES} minutes.`
-            + '\nPress **Verify a wallet** again and send the transaction after you do.')
-        }
-
-        const found = await findProof(KEYS_CHAIN, pending.wallet, pending.from_block)
-        if (!found.ok) {
-          return say(found.why === 'unreadable'
-            ? 'Could not read the chain just now — I will not tell you it has not arrived when I cannot see. Try again shortly.'
-            : 'Not seen yet. It can take a minute to land — press again in a moment.'
-              + '\nMake sure it was sent **from** the wallet you are verifying.')
-        }
-
-        await update(`verify_requests?id=eq.${pending.id}`,
-          { status: 'verified', verified_at: new Date().toISOString(), tx_hash: found.txHash })
-        await upsert('verified_wallets', {
-          wallet: pending.wallet, discord_user_id: user.id, guild_id: guildId,
-          tx_hash: found.txHash, verified_at: new Date().toISOString(), unlinked_at: null,
-        }, 'wallet')
-
-        const mine = await walletsOf(user.id)
-        let held = 0, blind = false
-        for (const w of mine) {
-          const n = await balanceOf(KEYS_CHAIN, KEYS_CONTRACT, w.wallet)
-          if (n === null) { blind = true; break }
-          held += n
-        }
-        if (blind) return say('**Verified.** Could not read your balance right now — press **Resync** in a moment for your role.')
-        if (!canAssignRoles()) return say(`**Verified.** You hold **${held}**, but I cannot set roles here yet.`)
-        const { granted } = await syncTiers(guildId, user.id, held, KEY_TIERS)
-        return say(`**Verified.** \`${pending.wallet.slice(0, 8)}…${pending.wallet.slice(-6)}\` is yours.\n`
-          + `**${held} key${held === 1 ? '' : 's'}** across ${mine.length} wallet${mine.length === 1 ? '' : 's'}. `
-          + (granted ? `You are **${granted.name}**.` : 'Not enough for a role yet — add another wallet if you hold elsewhere.'))
       } catch {
         await say('Something went wrong on our side. Try again.')
       }

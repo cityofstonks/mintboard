@@ -10,10 +10,16 @@ import config from '@/mintboard.config'
  * browser extension and excludes exactly the careful people most likely to
  * hold the most.
  *
- * WHAT MAKES IT SOUND is the block floor. Only transactions after the claim
- * count. Without that, any wallet that had ever paid us would verify for
- * whoever claimed it next, and the busiest wallets would be the easiest to
- * steal.
+ * WHAT MAKES IT SOUND is the block floor. Only transactions mined after the
+ * claim was opened count. Without that, any wallet that had ever paid us
+ * would verify for whoever claimed it next, and the busiest wallets would be
+ * the easiest to steal.
+ *
+ * THE HOLDER SUPPLIES THE HASH rather than us hunting for it. This started as
+ * a backwards block scan and that cannot work here: Robinhood Chain mines ten
+ * blocks a second, so a thirty-minute window is eighteen thousand blocks and
+ * eighteen thousand RPC calls. Asking for the hash makes it one call, and one
+ * call is also one thing that can fail rather than eighteen thousand.
  */
 
 export const VERIFY_ADDRESS = (process.env.VERIFY_ADDRESS ?? '').trim().toLowerCase()
@@ -49,40 +55,45 @@ export const blockNow = async (chain: string): Promise<number | null> => {
 }
 
 export type Found =
-  | { ok: true; txHash: string }
-  | { ok: false; why: 'not-yet' | 'unreadable' }
+  | { ok: true; txHash: string; block: number }
+  | { ok: false; why: 'unreadable' | 'not-found' | 'pending' | 'wrong-sender' | 'wrong-target' | 'too-early' }
+
+interface Tx { from?: string; to?: string; hash?: string; blockNumber?: string | null }
 
 /**
- * Look for a transaction from `wallet` to the verify address, after `fromBlock`.
+ * Check one transaction, named by the person claiming the wallet.
  *
- * Scans recent blocks rather than using an indexer, so it depends on nothing
- * but the RPC. The window is deliberately small — a claim is meant to be
- * completed in minutes, and a wide scan is both slow and a way to accidentally
- * match something ancient.
+ * Every reason to say no is its own answer. "We could not reach the chain"
+ * and "that transaction came from a different wallet" are completely
+ * different problems for the person reading the reply, and collapsing them
+ * into a single no is how somebody ends up sending a second transaction to
+ * fix something that was never wrong.
  */
-export async function findProof(
-  chain: string, wallet: string, fromBlock: number, maxBlocks = 3000,
+export async function checkProof(
+  chain: string, wallet: string, txHash: string, fromBlock: number,
 ): Promise<Found> {
-  const tip = await blockNow(chain)
-  if (tip === null) return { ok: false, why: 'unreadable' }
-  const start = Math.max(fromBlock, tip - maxBlocks)
-  const want = wallet.toLowerCase()
-  const to = VERIFY_ADDRESS
+  const hash = txHash.trim().toLowerCase()
+  if (!/^0x[0-9a-f]{64}$/.test(hash)) return { ok: false, why: 'not-found' }
 
-  for (let n = tip; n >= start; n--) {
-    const block = await rpc<{ transactions?: { from?: string; to?: string; hash?: string }[] }>(
-      chain, 'eth_getBlockByNumber', ['0x' + n.toString(16), true])
-    // A block we could not read is NOT a block with no match. Saying
-    // "not found" here would tell somebody their proof had not arrived when
-    // it might have, and they would send another.
-    if (block === null) return { ok: false, why: 'unreadable' }
-    for (const t of block.transactions ?? []) {
-      if ((t.from ?? '').toLowerCase() === want && (t.to ?? '').toLowerCase() === to) {
-        return { ok: true, txHash: t.hash ?? '' }
-      }
-    }
+  const tx = await rpc<Tx | null>(chain, 'eth_getTransactionByHash', [hash])
+  // null means the read failed OR no such transaction, and the two are not
+  // the same thing. A second call tells them apart: if the chain answers with
+  // a block height, it is reachable, so a null transaction really is absent.
+  if (tx === null) {
+    return { ok: false, why: (await blockNow(chain)) === null ? 'unreadable' : 'not-found' }
   }
-  return { ok: false, why: 'not-yet' }
+
+  if (!tx.blockNumber) return { ok: false, why: 'pending' }
+  if ((tx.from ?? '').toLowerCase() !== wallet.toLowerCase()) return { ok: false, why: 'wrong-sender' }
+  if ((tx.to ?? '').toLowerCase() !== VERIFY_ADDRESS) return { ok: false, why: 'wrong-target' }
+
+  const block = parseInt(tx.blockNumber, 16)
+  // The floor. A transaction mined before the claim was opened proves the
+  // wallet acted, but not that the person claiming it now is the one who
+  // acted — it could be anyone who can read a block explorer.
+  if (!Number.isFinite(block) || block < fromBlock) return { ok: false, why: 'too-early' }
+
+  return { ok: true, txHash: hash, block }
 }
 
 export interface Linked { wallet: string; verified_at: string }
