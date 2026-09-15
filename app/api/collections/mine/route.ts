@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { currentProfile, collectionsOwnedBy, isOperator } from '@/lib/accounts'
+import { currentProfile, collectionsFor, isOperator } from '@/lib/accounts'
 import { dbReady } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
@@ -12,6 +12,6 @@ export async function GET() {
   return NextResponse.json({
     handle: me.x_handle,
     operator: await isOperator(),
-    collections: await collectionsOwnedBy(me.id),
+    collections: await collectionsFor(me.id),
   }, { headers: { 'cache-control': 'private, no-store' } })
 }

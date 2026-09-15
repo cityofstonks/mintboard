@@ -16,7 +16,7 @@ const KEY = process.env.SUPABASE_SECRET_KEY ?? ''
 
 export const dbReady = () => Boolean(URL_ && KEY)
 
-async function rest(path: string, init: RequestInit = {}): Promise<Response> {
+export async function rest(path: string, init: RequestInit = {}): Promise<Response> {
   if (!dbReady()) throw new Error('Supabase is not configured on this deployment.')
   return fetch(`${URL_}/rest/v1/${path}`, {
     ...init,
