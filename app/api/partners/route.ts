@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { COOKIE, adminEnabled, validToken } from '@/lib/auth'
+import { COOKIE, adminEnabled, signedIn } from '@/lib/auth'
 import { readPartners, writePartners, storeMode } from '@/lib/store'
 import type { Partner } from '@/lib/types'
 import { callerOf, tooMany } from '@/lib/limit'
@@ -9,7 +9,7 @@ import { openRaffle, routingEnabled } from '@/lib/collab'
 export const dynamic = 'force-dynamic'
 
 const isAdmin = async () =>
-  adminEnabled() && validToken((await cookies()).get(COOKIE)?.value)
+  signedIn((await cookies()).get(COOKIE)?.value)
 
 /**
  * Approved partners only, unless an operator is asking.

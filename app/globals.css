@@ -306,3 +306,13 @@ button:focus-visible, .btn:focus-visible, a:focus-visible, .enter:focus-visible,
 .rail-scroll::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 999px; }
 .rail-scroll::-webkit-scrollbar-thumb:hover { background: var(--edge-lit); }
 @media (prefers-reduced-motion: reduce) { .rail-scroll { scroll-behavior: auto; } }
+
+/* Header: inline links on a wide screen, behind a button on a narrow one.
+   One breakpoint, matching the rest of the page. */
+.nav-narrow { display: none; }
+@media (max-width: 720px) {
+  .nav-wide { display: none !important; }
+  .nav-narrow { display: block; }
+}
+/* The sticky header must not sit on top of whatever an anchor jumps to. */
+html { scroll-padding-top: 74px; }

@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { COOKIE, adminEnabled, validToken } from '@/lib/auth'
+import { COOKIE, adminEnabled, signedIn } from '@/lib/auth'
 import { readRaffles, writeRaffles, storeMode } from '@/lib/store'
 import type { RaffleEntry } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
 async function guard() {
-  if (!adminEnabled()) return 'The admin is switched off — no ADMIN_PASSWORD is set.'
   const jar = await cookies()
-  if (!validToken(jar.get(COOKIE)?.value)) return 'Not signed in.'
+  if (!signedIn(jar.get(COOKIE)?.value)) return 'Not signed in.'
   return null
 }
 

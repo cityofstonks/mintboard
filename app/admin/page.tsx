@@ -24,6 +24,8 @@ export default function Admin() {
   const [mode, setMode] = useState<string>('')
   /** Whether approval can actually reach Discord. */
   const [routing, setRouting] = useState(false)
+  const [providers, setProviders] = useState<string[]>([])
+  const [passwordOn, setPasswordOn] = useState(true)
   const [draft, setDraft] = useState<RaffleEntry>(blank())
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
@@ -34,6 +36,10 @@ export default function Admin() {
     if (r.status === 401) { setAuthed(false); return }
     const d = await r.json()
     setList(d.raffles ?? []); setMode(d.mode ?? ''); setAuthed(true)
+    try {
+      const ar = await fetch('/api/auth/providers')
+      if (ar.ok) { const a = await ar.json(); setProviders(a.providers ?? []); setPasswordOn(Boolean(a.password)) }
+    } catch { /* the password form still works */ }
     const pr = await fetch('/api/partners')
     if (pr.ok) {
       const pd = await pr.json()
@@ -45,6 +51,14 @@ export default function Admin() {
   }, [])
 
   useEffect(() => { void load() }, [load])
+
+  // The callback never says why in the URL — only that it refused.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('error') === 'denied') {
+      setMsg('That account is not on this board\u2019s allowlist.')
+      window.history.replaceState(null, '', '/admin')
+    }
+  }, [])
 
   async function login(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setMsg('')
@@ -112,11 +126,56 @@ export default function Admin() {
       <main className="wrap" style={{ maxWidth: 460 }}>
         <h1>ADMIN</h1>
         <p className="lede">Sign in to manage the raffles on this board.</p>
-        <form className="ask" onSubmit={login}>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="admin password" aria-label="admin password" />
-          <button disabled={busy}>{busy ? '…' : 'Sign in'}</button>
-        </form>
+
+        {providers.length > 0 && (
+          <div style={{ display: 'grid', gap: 10, margin: '20px 0 6px' }}>
+            {providers.includes('x') && (
+              <a className="btn" href="/api/auth/x" style={{ textAlign: 'center' }}>
+                Continue with X
+              </a>
+            )}
+            {providers.includes('google') && (
+              <a className="btn" href="/api/auth/google" style={{
+                textAlign: 'center', background: 'var(--glass-soft)', color: 'var(--ink)',
+                border: '1px solid var(--edge)', boxShadow: 'none',
+              }}>
+                Continue with Google
+              </a>
+            )}
+            <p className="note" style={{ margin: 0 }}>
+              Only accounts on this board&apos;s allowlist can sign in. Everyone else is turned
+              away after the provider confirms who they are.
+            </p>
+          </div>
+        )}
+
+        {providers.length > 0 && passwordOn && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '18px 0 10px' }}>
+            <span style={{ flex: 1, height: 1, background: 'var(--edge)' }} />
+            <span className="code">OR</span>
+            <span style={{ flex: 1, height: 1, background: 'var(--edge)' }} />
+          </div>
+        )}
+
+        {passwordOn && (
+          <form className="ask" onSubmit={login} style={{ marginTop: providers.length ? 0 : 20 }}>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="admin password" aria-label="admin password" />
+            <button disabled={busy}>{busy ? '…' : 'Sign in'}</button>
+          </form>
+        )}
+
+        {providers.length === 0 && !passwordOn && (
+          <div className="empty" style={{ marginTop: 18, textAlign: 'left' }}>
+            <strong style={{ color: 'var(--ink)' }}>No way in is configured.</strong>
+            <p className="note" style={{ margin: '6px 0 0' }}>
+              Set <code>ADMIN_PASSWORD</code>, or an OAuth client plus{' '}
+              <code>ADMIN_ALLOWLIST</code>. The admin refuses to open rather than
+              defaulting to letting anyone in.
+            </p>
+          </div>
+        )}
+
         {msg && <p className="warn" style={{ marginTop: 14 }}>{msg}</p>}
       </main>
     )
