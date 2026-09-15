@@ -32,9 +32,10 @@ export default function Partners() {
             fifty between three people cannot look like fifty holders.
           </p>
           <p className="lede" style={{ marginBottom: 16 }}>
-            Rows marked <b style={{ color: 'var(--accent)' }}>OUR ROOM</b> are the other direction:
-            allocations <em>we</em> were given, and what our holders did with them. It is the same
-            question asked of us, which is the only reason it belongs in the same table.
+            The row marked <b style={{ color: 'var(--accent)' }}>OUR ROOM</b> is the other
+            direction: allocations <em>we</em> were given, across three mints, and what our holders
+            did with them. It is the same question asked of us, which is the only reason it belongs
+            in the same table.
           </p>
           <div className="cards">
             {byRetention(allStats()).map((s, i) => (

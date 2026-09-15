@@ -40,6 +40,15 @@ const CHAIN = arg('chain', 'ethereum')
 const CONTRACT = arg('contract').toLowerCase()
 const FROM = Number(arg('from-block', '0'))
 const COHORT_FILE = arg('cohort')
+/**
+ * --wallets <path> — write the per-wallet verdict as JSON.
+ *
+ * Needed to combine several scans into one honest row. Summing the counts
+ * from three scans counts a wallet three times if it took all three spots,
+ * and "288 wallets minted" would then be a bigger number than the cohort has
+ * people. The union has to be taken over identities, not totals.
+ */
+const WALLETS_OUT = arg('wallets')
 if (!HANDLE || !CONTRACT || !COHORT_FILE) {
   console.error('usage: --handle <x> --contract 0xYOURTOKEN --cohort wallets.txt [--chain ethereum] [--from-block N] [--write]')
   console.error('  --cohort is required: without the allocation list there is no community to measure.')
@@ -336,6 +345,21 @@ if (!minters) {
   console.error('\nNo mints found in the scanned range, so there is nothing to report.')
   console.error('Pass --from-block with a block at or below the first mint and run it again.')
   process.exit(1)
+}
+
+if (WALLETS_OUT) {
+  const { writeFileSync: writeJson } = await import('node:fs')
+  const per = {}
+  for (const w of COHORT) {
+    const tokens = mintedBy.get(w)
+    if (!tokens?.size) continue
+    per[w] = {
+      held: [...tokens].some(id => (currentOwner.get(id) ?? '') === w),
+      boughtMore: (balance.get(w) ?? 0) > tokens.size,
+    }
+  }
+  writeJson(WALLETS_OUT, JSON.stringify(per))
+  console.log(`  wrote ${Object.keys(per).length} wallet verdicts to ${WALLETS_OUT}`)
 }
 
 const row = {

@@ -213,4 +213,13 @@ export interface HolderStats {
    * table. The flag exists to label them, not to score them differently.
    */
   outbound?: boolean
+  /**
+   * How many separate allocations an outbound row covers.
+   *
+   * Present only when a row is several mints combined. It forces the card to
+   * say "spots taken" instead of "wallets", because a wallet that took all
+   * three is counted three times in the total — the ratio is right, the noun
+   * is not, and "288 wallets" would be more people than the cohort has.
+   */
+  across?: number
 }

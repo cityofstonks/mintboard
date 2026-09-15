@@ -55,7 +55,9 @@ export default function Quality({ s }: { s: HolderStats }) {
         <b style={{ letterSpacing: '.06em' }}>GOLD</b> — bought more than they were given
       </div>
       <span className="note">
-        {s.minted} of their wallets minted · {s.keysNow.toLocaleString()} in the room now
+        {s.across
+          ? `${s.minted} spots taken across ${s.across} mints`
+          : `${s.minted} of their wallets minted`} · {s.keysNow.toLocaleString()} in the room now
         {age > 0 && ` · scanned ${age} day${age === 1 ? '' : 's'} ago`}
       </span>
     </div>
