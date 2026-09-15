@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import config from '@/mintboard.config'
-import { boardFor } from '@/lib/board'
+import { boardFor, hasWonSomething } from '@/lib/board'
 import { gateBalance, isAddress } from '@/lib/chain'
 import { liveRaffles } from '@/lib/raffles'
 import { callerOf, tooMany } from '@/lib/limit'
@@ -24,7 +24,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'need a wallet address' }, { status: 400 })
   }
 
-  if (config.gate) {
+  // A winner is let through before the chain is consulted at all. Cheaper,
+  // and it means the one group who most needs this page can never be locked
+  // out of it by an endpoint having a bad minute.
+  const won = hasWonSomething(address)
+
+  if (config.gate && !won) {
     const held = await gateBalance(address)
     // 503, never "locked". Telling somebody they do not qualify because an
     // RPC blinked is the one wrong answer that costs them a mint.
@@ -36,7 +41,9 @@ export async function GET(req: Request) {
       return NextResponse.json({
         locked: true, keys: held, need: config.gate.min,
         message: `The board is for ${config.gate.label}. ${held === 0
-          ? `${config.gate.min} or more.` : `You hold ${held} of the ${config.gate.min} needed.`}`,
+          ? `${config.gate.min} or more.` : `You hold ${held} of the ${config.gate.min} needed.`}`
+          + ' If you won a spot, check you pasted the same wallet you won it on — winners get in'
+          + ' whatever they hold now.',
         // Locked out of the board is not locked out of what is running.
         raffles: await liveRaffles(),
       }, { status: 403, headers: PRIVATE })
@@ -46,7 +53,11 @@ export async function GET(req: Request) {
       { headers: PRIVATE })
   }
 
+  // Either there is no gate, or this wallet won something. A winner's key
+  // count is still worth reporting, but an unreadable chain must not stop the
+  // page rendering for them — so it is read leniently and may be null.
+  const keys = config.gate ? await gateBalance(address) : null
   const board = await boardFor(address)
-  return NextResponse.json({ locked: false, keys: null, ...board, raffles: await liveRaffles() },
+  return NextResponse.json({ locked: false, keys, wonSpot: won, ...board, raffles: await liveRaffles() },
     { headers: PRIVATE })
 }

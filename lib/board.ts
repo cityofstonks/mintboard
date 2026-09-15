@@ -2,6 +2,7 @@ import config from '@/mintboard.config'
 import { holdings } from './chain'
 import mints from '@/data/mints.json'
 import spots from '@/data/spots.json'
+import { wonIn } from './won'
 import type { Bucket, BoardRow, HeldAsset, MintEntry, SpotList, Tier } from './types'
 
 const MINTS = mints as MintEntry[]
@@ -9,6 +10,9 @@ const SPOTS = spots as Record<string, SpotList>
 
 const lower = (s: string) => s.trim().toLowerCase()
 const listOf = (id: string): SpotList | undefined => SPOTS[id]
+
+/** See lib/won.ts — kept here so callers have one import. */
+export const hasWonSomething = (addr: string): boolean => wonIn(SPOTS, addr)
 const onList = (id: string, addr: string) =>
   !!listOf(id)?.wallets.some(w => lower(w) === lower(addr))
 
