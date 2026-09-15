@@ -45,7 +45,18 @@ export default async function Upcoming() {
   const rows = MINTS.map(m => {
     const tiers = (m.eligibility ?? []).map(e => {
       const list = e.via === 'spots' ? SPOTS[e.list] : undefined
-      return { tier: e.tier, have: list?.wallets.length ?? 0 }
+      /*
+       * How many spots were AWARDED, not how many addresses we happen to hold.
+       *
+       * Toadstools showed as 17 when 25 were won, because the spot list is
+       * keyed by EVM wallet and eight winners only ever dropped a taproot
+       * address. Counting rows silently understated what the room earned —
+       * and understating it on the public page is the version that costs us,
+       * since this is the number a project reads when deciding what we are
+       * worth.
+       */
+      const onFile = list?.wallets.length ?? 0
+      return { tier: e.tier, have: Math.max(list?.expected ?? 0, onFile), onFile }
     })
     // An explicit end beats the grace timer. stateOf already takes a close,
     // so passing endedAt makes a finished mint read as finished immediately

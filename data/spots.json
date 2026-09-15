@@ -101,7 +101,7 @@
     ],
     "expected": 30,
     "needs": {
-      "message": "You have not filed an X comment for Pathogen Lab. Their spots are checked by hand and no comment means no spot — follow @pathogenlabio, like and repost https://x.com/pathogenlabio/status/2096687534797472009, comment on it, then drop the link to YOUR comment in #mint-proof.",
+      "message": "You have not filed an X comment for Pathogen Lab. Their spots are checked by hand and no comment means no spot \u2014 follow @pathogenlabio, like and repost https://x.com/pathogenlabio/status/2096687534797472009, comment on it, then drop the link to YOUR comment in #mint-proof.",
       "wallets": []
     }
   },
@@ -126,7 +126,7 @@
     ],
     "expected": 15,
     "needs": {
-      "message": "You have not filed an X comment for Pathogen Lab. Their spots are checked by hand and no comment means no spot — follow @pathogenlabio, like and repost https://x.com/pathogenlabio/status/2096687534797472009, comment on it, then drop the link to YOUR comment in #mint-proof.",
+      "message": "You have not filed an X comment for Pathogen Lab. Their spots are checked by hand and no comment means no spot \u2014 follow @pathogenlabio, like and repost https://x.com/pathogenlabio/status/2096687534797472009, comment on it, then drop the link to YOUR comment in #mint-proof.",
       "wallets": []
     }
   },
@@ -227,7 +227,7 @@
     "expected": 20
   },
   "toadstools-spots": {
-    "source": "Toadstools, 20 spots to the room (12 Key Masters + 8 Key Holders) allocated 2026-09-11; 5 more went to the team. Delivery is to a taproot BTC address.",
+    "source": "Toadstools, 25 spots: 15 Key Masters + 8 Key Holders + 2 from the team allocation, as sent to the project 2026-09-11. The team gave up four of its five so the room would not come up short. 17 of the 25 have an EVM wallet on file; the rest dropped only a taproot address. Delivery is to the taproot address, so all 25 are deliverable.",
     "wallets": [
       "0x0e409c358160fd67bc3c1bd039df4b752f46ca44",
       "0x526f721015862330a30a4879ef1b914ef3ef3750",
@@ -247,9 +247,9 @@
       "0x5df221ca0bb4ea60138be0ba78036394a08d00d9",
       "0x28f0388ff37f1fb607c032c44e57dcb77cdc7f10"
     ],
-    "expected": 20,
+    "expected": 25,
     "needs": {
-      "message": "The Bitcoin address you dropped starts bc1q — that is segwit, and it CANNOT hold an inscription. Sending an ordinal to it can destroy it. Post a taproot address starting bc1p (Xverse, Unisat or Leather) in #wallet-drop before this mints.",
+      "message": "The Bitcoin address you dropped starts bc1q \u2014 that is segwit, and it CANNOT hold an inscription. Sending an ordinal to it can destroy it. Post a taproot address starting bc1p (Xverse, Unisat or Leather) in #wallet-drop before this mints.",
       "wallets": []
     },
     "delivery": {
@@ -319,7 +319,7 @@
     ],
     "expected": 25,
     "needs": {
-      "message": "You have not filed an X comment for Zorpians. They need a username for every winner and your comment is the only place we read one — follow @zorpians, like and repost their pinned post, comment tagging @CityOfStonks, then drop the link in #mint-proof. No handle on the sheet, no spot on their list.",
+      "message": "You have not filed an X comment for Zorpians. They need a username for every winner and your comment is the only place we read one \u2014 follow @zorpians, like and repost their pinned post, comment tagging @CityOfStonks, then drop the link in #mint-proof. No handle on the sheet, no spot on their list.",
       "wallets": []
     }
   },
