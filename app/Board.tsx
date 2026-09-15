@@ -113,12 +113,27 @@ export default function Board({ embed = false }: { embed?: boolean }) {
         <form className="ask" onSubmit={e => { e.preventDefault(); void check(addr) }}>
           <input value={addr} onChange={e => setAddr(e.target.value)} spellCheck={false}
             placeholder="0x… check a wallet for spots you have won" aria-label="wallet address" />
-          <button type="submit" disabled={busy}>{busy ? 'Reading…' : 'Check my spots'}</button>
+          <button type="submit" disabled={busy} aria-busy={busy}>{busy ? 'Reading…' : 'Check my spots'}</button>
         </form>
         <p className="note">Read-only. Nothing is signed and nothing is stored.</p>
+        {/*
+          * Without this a screen reader user pastes a wallet, the page swaps
+          * its whole contents, and nothing is announced — the board appears to
+          * do nothing at all. Polite so it waits for a pause rather than
+          * cutting across them mid-sentence.
+          */}
+        <p aria-live="polite" className="note" style={{
+          position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap',
+        }}>
+          {busy ? 'Reading the chain.'
+            : data?.error ? data.error
+            : data?.locked ? (data.message ?? 'This board is locked.')
+            : data ? `${rows.length} mint${rows.length === 1 ? '' : 's'} you qualify for.`
+            : ''}
+        </p>
 
         {shown.length > 0 && (
-          <section className="rail r-raffle">
+          <section className="rail r-raffle" aria-label="Opportunities open now">
             <h2><i />Opportunities open now <b>{shown.length}</b></h2>
             <div className="cards">
               {shown.map(r => {

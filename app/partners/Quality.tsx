@@ -4,10 +4,12 @@ import type { HolderStats } from '@/lib/types'
 /**
  * How well a community held the allocation you gave them.
  *
- * The bar is two segments and sums to 100%: of the wallets that took a spot
- * and minted, how many still hold one. Everything else sold.
+ * SOLD / HOLD / GOLD.
  *
- * "Bought more" sits OUTSIDE the bar on purpose. It overlaps both segments —
+ * The bar is two segments and sums to 100%: of the wallets that took a spot
+ * and minted, how many still HOLD one. Everything else SOLD.
+ *
+ * GOLD sits OUTSIDE the bar on purpose. It overlaps both segments —
  * a wallet can sell the one it minted and still buy three on secondary — so
  * adding it as a third slice would count those wallets twice and quietly push
  * the sold share down. It is its own measure, so it gets its own line.
@@ -17,8 +19,8 @@ export default function Quality({ s }: { s: HolderStats }) {
   const heldPct = (s.held / n) * 100
   const sold = s.minted - s.held
   const parts = [
-    { k: 'still holding', v: s.held, c: 'var(--accent)' },
-    { k: 'sold', v: sold, c: 'var(--warn)' },
+    { k: 'HOLD', v: s.held, c: 'var(--accent)' },
+    { k: 'SOLD', v: sold, c: 'var(--warn)' },
   ]
   const age = Math.floor((Date.now() - Date.parse(s.scannedAt)) / 86400_000)
 
@@ -34,11 +36,11 @@ export default function Quality({ s }: { s: HolderStats }) {
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--muted)' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <i style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--accent)', display: 'inline-block' }} />
-          <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{Math.round(heldPct)}%</b> still holding
+          <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{Math.round(heldPct)}%</b> <b style={{ letterSpacing: '.06em' }}>HOLD</b>
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <i style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--warn)', display: 'inline-block' }} />
-          <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{Math.round((sold / n) * 100)}%</b> sold
+          <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{Math.round((sold / n) * 100)}%</b> <b style={{ letterSpacing: '.06em' }}>SOLD</b>
         </span>
       </div>
 
@@ -50,7 +52,7 @@ export default function Quality({ s }: { s: HolderStats }) {
         <b style={{ color: s.boughtMore ? 'var(--ink)' : 'var(--faint)', fontWeight: 600 }}>
           {Math.round((s.boughtMore / n) * 100)}%
         </b>
-        bought more than they were given
+        <b style={{ letterSpacing: '.06em' }}>GOLD</b> — bought more than they were given
       </div>
       <span className="note">
         {s.minted} of their wallets minted · {s.keysNow.toLocaleString()} in the room now

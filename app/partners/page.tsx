@@ -26,10 +26,12 @@ export default function Partners() {
         <>
           <p className="heading">What their holders did last time</p>
           <p className="lede" style={{ marginBottom: 16 }}>
-            Every one of these communities was given an allocation here. This is what they did
-            with it: of the wallets that took a spot and minted, how many still hold one.
-            Read off our own Transfer logs, counting wallets rather than tokens, so a room
-            that minted fifty between three people cannot look like fifty holders.
+            <b>SOLD / HOLD / GOLD.</b> Every one of these communities was given an allocation
+            here, and this is what they did with it. <b>HOLD</b> still own what they minted.{' '}
+            <b>SOLD</b> did not. <b>GOLD</b> went and bought more than they were given — the one
+            a partner can be proud of. Read off our own Transfer logs, counting wallets rather
+            than tokens, so a room that minted fifty between three people cannot look like
+            fifty holders.
           </p>
           <div className="cards">
             {byRetention(allStats()).map(s => (

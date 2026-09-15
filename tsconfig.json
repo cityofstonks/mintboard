@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    /* Test files import siblings with an explicit .ts so plain `node --test`
+       can resolve them without a bundler. */
+    "allowImportingTsExtensions": true,
     "target": "ES2022",
     "lib": [
       "dom",
