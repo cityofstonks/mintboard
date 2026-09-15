@@ -4,8 +4,18 @@ import {
   CHANNEL_MESSAGE, MODAL, EPHEMERAL,
 } from '@/lib/discordVerify'
 import { ticketsFor, DEFAULTS, type Params } from '@/lib/tickets'
-import { select, insert, upsert, update, dbReady } from '@/lib/db'
+import { select, insert, upsert, update, rest, dbReady } from '@/lib/db'
 import { balanceOf } from '@/lib/chain'
+import { VERIFY_ADDRESS, verifyReady, blockNow, findProof, walletsOf, ownerOf } from '@/lib/verify'
+import { syncTiers, canAssignRoles, type Tier } from '@/lib/roles'
+
+/** City of Stonks' tiers. Read from config once this is multi-guild. */
+const KEY_TIERS: Tier[] = [
+  { minHeld: 5, roleId: '1543568614710317146', name: 'Key Master' },
+  { minHeld: 1, roleId: '1543565508450721942', name: 'Key Holder' },
+]
+const KEYS_CHAIN = 'robinhood'
+const KEYS_CONTRACT = '0x1a37f894f92a0b5c9229aee30a72385ba0a1f355'
 
 export const dynamic = 'force-dynamic'
 
@@ -97,7 +107,7 @@ export async function POST(req: Request) {
   if (!ok) return new NextResponse('bad signature', { status: 401 })
 
   const body = JSON.parse(raw) as {
-    type: number; application_id: string; token: string
+    type: number; application_id: string; token: string; guild_id?: string
     data?: { custom_id?: string; components?: { components?: { custom_id?: string; value?: string }[] }[] }
     member?: {
       user?: { id: string; username: string }
@@ -168,6 +178,25 @@ export async function POST(req: Request) {
     })
   }
 
+  // Verification. The modal is answered with no work, same reason as the rest.
+  if (body.type === MESSAGE_COMPONENT && action === 'verify') {
+    return NextResponse.json({
+      type: MODAL,
+      data: {
+        custom_id: 'verify:go', title: 'Verify a wallet',
+        components: [{
+          type: 1,
+          components: [{
+            type: 4, custom_id: 'address', style: 1,
+            label: 'The wallet you want to verify',
+            placeholder: '0x… — nothing is connected and nothing is signed',
+            min_length: 42, max_length: 42, required: true,
+          }],
+        }],
+      },
+    })
+  }
+
   if (!dbReady()) return reply('This board is not finished being set up yet.')
 
   // ── a wallet coming back from the modal ─────────────────────────────────
@@ -231,6 +260,119 @@ export async function POST(req: Request) {
           + ' your ticket count will not change until somebody has looked at it.')
       } catch {
         await say('Could not file that just now. Nothing was recorded — try again.')
+      }
+    })
+    return thinking()
+  }
+
+  const guildId = body.guild_id ?? ''
+
+  if (body.type === MODAL_SUBMIT && action === 'verify') {
+    const wallet = (body.data?.components?.[0]?.components?.[0]?.value ?? '').trim().toLowerCase()
+    if (!/^0x[0-9a-f]{40}$/.test(wallet)) {
+      return reply('That is not a wallet address — `0x`, then 40 characters.')
+    }
+    if (!verifyReady()) return reply('Verification is not switched on here yet.')
+    after(async () => {
+      const say = (m: string) => finish(body.application_id, body.token, m)
+      try {
+        const already = await ownerOf(wallet)
+        if (already && already.discord_user_id !== user.id) {
+          // Never name them. Somebody probing which wallets are taken should
+          // not be handed a wallet-to-person map.
+          return say('That wallet is already verified to another account. If it is yours, open a ticket.')
+        }
+        const tip = await blockNow(KEYS_CHAIN)
+        if (tip === null) {
+          return say('Could not reach the chain just now. Try again in a moment — nothing was recorded.')
+        }
+        // Replaces any older pending claim on this wallet: two people cannot
+        // both be waiting on one transaction to decide between them.
+        await rest(`verify_requests?wallet=eq.${wallet}&status=eq.pending`, {
+          method: 'PATCH', headers: { prefer: 'return=minimal' },
+          body: JSON.stringify({ status: 'expired' }),
+        })
+        await insert('verify_requests', {
+          guild_id: guildId, discord_user_id: user.id, wallet,
+          chain: KEYS_CHAIN, from_block: tip, status: 'pending',
+        }, 'return=minimal')
+        await say(
+          `**Send any transaction from \`${wallet.slice(0, 8)}…${wallet.slice(-6)}\` to:**\n`
+          + `\`${VERIFY_ADDRESS}\`\n\n`
+          + 'Zero value is fine — the point is that it came from your wallet, not what it carried.'
+          + ' Nothing is connected and nothing is signed.\n\n'
+          + 'Then press **I have sent it**.')
+      } catch {
+        await say('Could not start that just now. Nothing was recorded — try again.')
+      }
+    })
+    return thinking()
+  }
+
+  if (body.type === MESSAGE_COMPONENT && (action === 'vcheck' || action === 'vwallets' || action === 'vresync')) {
+    after(async () => {
+      const say = (m: string) => finish(body.application_id, body.token, m)
+      try {
+        if (action === 'vwallets') {
+          const mine = await walletsOf(user.id)
+          if (!mine.length) return say('No verified wallets yet. Press **Verify a wallet** to add one.')
+          return say('**Your verified wallets**\n'
+            + mine.map(w => `▸ \`${w.wallet}\` — since ${w.verified_at.slice(0, 10)}`).join('\n'))
+        }
+
+        if (action === 'vresync') {
+          const mine = await walletsOf(user.id)
+          if (!mine.length) return say('Nothing to resync — verify a wallet first.')
+          let held = 0
+          for (const w of mine) {
+            const n = await balanceOf(KEYS_CHAIN, KEYS_CONTRACT, w.wallet)
+            // Unreadable is not zero. Continuing with 0 here would strip
+            // somebody's role because an endpoint blinked.
+            if (n === null) return say('Could not read the chain for one of your wallets. Nothing changed — try again shortly.')
+            held += n
+          }
+          if (!canAssignRoles()) return say(`You hold **${held}** across ${mine.length} wallet${mine.length === 1 ? '' : 's'}, but I cannot set roles here yet.`)
+          const { granted, removed } = await syncTiers(guildId, user.id, held, KEY_TIERS)
+          return say(`**${held} key${held === 1 ? '' : 's'}** across ${mine.length} wallet${mine.length === 1 ? '' : 's'}.\n`
+            + (granted ? `You are **${granted.name}**.` : 'That is not enough for a role yet.')
+            + (removed.length ? `\nRemoved: ${removed.join(', ')}.` : ''))
+        }
+
+        // vcheck — did the proof land?
+        const pending = (await select<{ id: string; wallet: string; from_block: number }[]>(
+          `verify_requests?discord_user_id=eq.${user.id}&status=eq.pending&order=requested_at.desc&limit=1`))?.[0]
+        if (!pending) return say('Nothing waiting. Press **Verify a wallet** to start.')
+
+        const found = await findProof(KEYS_CHAIN, pending.wallet, pending.from_block)
+        if (!found.ok) {
+          return say(found.why === 'unreadable'
+            ? 'Could not read the chain just now — I will not tell you it has not arrived when I cannot see. Try again shortly.'
+            : 'Not seen yet. It can take a minute to land — press again in a moment.'
+              + '\nMake sure it was sent **from** the wallet you are verifying.')
+        }
+
+        await update(`verify_requests?id=eq.${pending.id}`,
+          { status: 'verified', verified_at: new Date().toISOString(), tx_hash: found.txHash })
+        await upsert('verified_wallets', {
+          wallet: pending.wallet, discord_user_id: user.id, guild_id: guildId,
+          tx_hash: found.txHash, verified_at: new Date().toISOString(), unlinked_at: null,
+        }, 'wallet')
+
+        const mine = await walletsOf(user.id)
+        let held = 0, blind = false
+        for (const w of mine) {
+          const n = await balanceOf(KEYS_CHAIN, KEYS_CONTRACT, w.wallet)
+          if (n === null) { blind = true; break }
+          held += n
+        }
+        if (blind) return say('**Verified.** Could not read your balance right now — press **Resync** in a moment for your role.')
+        if (!canAssignRoles()) return say(`**Verified.** You hold **${held}**, but I cannot set roles here yet.`)
+        const { granted } = await syncTiers(guildId, user.id, held, KEY_TIERS)
+        return say(`**Verified.** \`${pending.wallet.slice(0, 8)}…${pending.wallet.slice(-6)}\` is yours.\n`
+          + `**${held} key${held === 1 ? '' : 's'}** across ${mine.length} wallet${mine.length === 1 ? '' : 's'}. `
+          + (granted ? `You are **${granted.name}**.` : 'Not enough for a role yet — add another wallet if you hold elsewhere.'))
+      } catch {
+        await say('Something went wrong on our side. Try again.')
       }
     })
     return thinking()
