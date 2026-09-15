@@ -17,6 +17,7 @@ import config from '@/mintboard.config'
 
 const LINKS: [string, string][] = [
   ['/', 'Open now'],
+  ['/upcoming', 'Coming up'],
   ['/board', 'The board'],
   ['/partners', 'Collections'],
   ['/guide', 'Guide'],
