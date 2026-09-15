@@ -343,5 +343,74 @@
       "0xc45f8476e5f7ab7574a2c12d468f41540e53fdab"
     ],
     "expected": 15
+  },
+  "hoodwalkers-spots": {
+    "source": "Hood Walkers, 20 spots drawn 2026-09-15 by the board bot from 95 entrants. Seed 8def4bb3-ff10-494e-a211-aa9b5aa37056:2026-09-15T19:42:43.348622+00:00:1.",
+    "expected": 20,
+    "wallets": [
+      "0x939dcddd7867b11ef017f1543525bc27044901dd",
+      "0x3cf08dce10c22d7a09eaaf33472c3af233b27685",
+      "0xb59779634019e565eec112227d868a9080dc54a1",
+      "0x192ce377e4d01dd1749bb6906bafa19b149cda75",
+      "0x68f501d53b2afd52d21ac2dcc7aff561daba27d0",
+      "0x4ec26258c9ac012d3f2becee83e0ebd81d799d79",
+      "0xb920eb87566b1f92fa4e3fa29a45c7979548315a",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0xcf0db123492c52f76df617bd88bc7bfe7d21d0a4",
+      "0xd1fad05bec0cc5d1baa98becf38e04e4f681ad17",
+      "0xc0e6efa19cff73aa5f1ef67109571c76d36ea77a",
+      "0xa6f5d46501f40ee37a07aa429a9c8f0b3dd0328d",
+      "0xc458fa60f966bd2348718f56e0bef77bd9d7ff84",
+      "0x64f7658e43ed0fbe7d0d761383879087ef427cd0",
+      "0x615bf4d916cf8ee9d34d6aeb316f913b0189ff29",
+      "0x3cdad896b5601ca921812a98dab82eda5deca51e",
+      "0x36e18515d488063a9fb2916ea4f02e05fa7e1760",
+      "0x872c22005e452c5ae61a29f5525775474076a992",
+      "0xb4adf3b632bc9231833f9c80c4dd4ef851c414e9",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47"
+    ]
+  },
+  "mixels-gtd": {
+    "source": "Mixels, 15 guaranteed spots drawn 2026-09-15 from the #the-lot ledger over 1440 minutes.",
+    "expected": 15,
+    "wallets": [
+      "0x4ec26258c9ac012d3f2becee83e0ebd81d799d79",
+      "0xf7d0080a40d8478bb0f8958573968486ee274845",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0xc45f8476e5f7ab7574a2c12d468f41540e53fdab",
+      "0xe8123460c271b6b2164ec7897a15c446c591846b",
+      "0xb59779634019e565eec112227d868a9080dc54a1",
+      "0x1fa83251e3773011b4ede627b1f16824c8fb8f2e",
+      "0xe6bb26d4038f320fd3fb7874d61c170251d91d0b",
+      "0x46950f4ca9063716869a54c148dfb9160721ccbd",
+      "0x872c22005e452c5ae61a29f5525775474076a992",
+      "0x39576596263f2f0a1805ea6106d74c7caea43337",
+      "0xb6dbe193d0682e734c03a620beb103b4027c61c3",
+      "0xd1fad05bec0cc5d1baa98becf38e04e4f681ad17",
+      "0x0fec7f13b9ae094ba6a603cc40015598f597ba01",
+      "0x68f501d53b2afd52d21ac2dcc7aff561daba27d0"
+    ]
+  },
+  "mixels-fcfs": {
+    "source": "Mixels, 5 spots for Key Holders \u2014 Key Masters were not in this tier.",
+    "expected": 5,
+    "wallets": [
+      "0x3cf08dce10c22d7a09eaaf33472c3af233b27685",
+      "0xb37fe18b1b6c21845fbf13c367a3daa2135ff0a8",
+      "0x4a6991da428fbc2884a0baabc9ecd5e4e3b28af0",
+      "0xd66121c92d766df54106d8f73b15eda256cedf24",
+      "0x27a11f92bbbd0faaa6aabba2495f903ae04123cc"
+    ]
+  },
+  "mixels-team": {
+    "source": "Mixels, 5 from the team allocation. Not community winners; counted so the total reads 25.",
+    "expected": 5,
+    "wallets": [
+      "0x8bfc8cd3a30a1b531dd8306ac893ec89f5e920bd",
+      "0x35739d6ae3ee2122643c7592142c2d9e3a13413b",
+      "0x4b0a7223ad976dfcae9c8e825b017b3ad90b1d04",
+      "0xce95649fd2905667df8a50c2ad4d5d816344b2df",
+      "0x1debdd02fa1036389a4e81422ba8e9b1b4243c3e"
+    ]
   }
 }

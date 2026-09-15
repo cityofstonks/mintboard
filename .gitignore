@@ -5,3 +5,7 @@ node_modules/
 *.tsbuildinfo
 .DS_Store
 .vercel
+
+# scratch credential drops — never committed
+.sbkey
+*.key

@@ -199,5 +199,43 @@
     "note": "4,444 code-drawn guardians on OpenSea. GTD and FCFS mint at 0.001 ETH, public at 0.0016. Check your phase on their own checker at astralsentinels.fun/whitelist.",
     "url": "https://x.com/AstralSentinels",
     "endedAt": "2026-09-14T16:00:00.000Z"
+  },
+  {
+    "code": "HWLK",
+    "name": "Hood Walkers",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "hoodwalkers-spots",
+        "tier": "GTD"
+      }
+    ],
+    "startsAt": null,
+    "note": "5,000 on Robinhood Chain. 20 spots drawn 2026-09-15 from 95 entrants, weighted by keys held and capped at 10% of the pool. No mint date announced yet.",
+    "url": "https://opensea.io/collection/hood-walkers"
+  },
+  {
+    "code": "MIXL",
+    "name": "Mixels",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "mixels-gtd",
+        "tier": "GTD"
+      },
+      {
+        "via": "spots",
+        "list": "mixels-fcfs",
+        "tier": "FCFS"
+      },
+      {
+        "via": "spots",
+        "list": "mixels-team",
+        "tier": "TEAM"
+      }
+    ],
+    "startsAt": null,
+    "note": "Robinhood Chain. 20 spots to the room \u2014 15 guaranteed for Key Masters, 5 for Key Holders \u2014 plus 5 from the team allocation, 25 in total. Mint date not announced yet; their own whitelist form is at mixels.fun.",
+    "url": "https://mixels.fun"
   }
 ]
