@@ -45,12 +45,7 @@ export default async function Upcoming() {
   const rows = MINTS.map(m => {
     const tiers = (m.eligibility ?? []).map(e => {
       const list = e.via === 'spots' ? SPOTS[e.list] : undefined
-      const have = list?.wallets.length ?? 0
-      // `expected` is what was awarded; wallets is what we hold addresses for.
-      // A shortfall is somebody who won and never filed a wallet, and it is
-      // worth seeing rather than rounding away.
-      const want = list ? (list.expected ?? have) : 0
-      return { tier: e.tier, have, short: Math.max(0, want - have) }
+      return { tier: e.tier, have: list?.wallets.length ?? 0 }
     })
     return {
       code: m.code, name: m.name, url: m.url, note: m.note,
@@ -70,7 +65,17 @@ export default async function Upcoming() {
   })
 
   const totalSpots = rows.reduce((a, r) => a + r.total, 0)
-  const shortfall = rows.reduce((a, r) => a + r.tiers.reduce((b, t) => b + t.short, 0), 0)
+  /*
+   * The soonest thing with a date, for the third tile.
+   *
+   * This slot used to hold a count of spots whose winner never filed a wallet.
+   * It was accurate and it did not belong: an operational gap we close by
+   * chasing people is not a headline, and putting it on a public page told
+   * every project reading it that spots they gave us went to waste. That
+   * number still exists where it is useful — the engine's spot-wallet-audit
+   * reports it privately — and nowhere a partner has to read it.
+   */
+  const next = rows.find(r => r.when && Date.parse(r.when) > now && r.state !== 'live')
 
   return (
     <main className="wrap">
@@ -92,13 +97,13 @@ export default async function Upcoming() {
           <span className="big">{raffles.length}</span>
           <span className="sub">{raffles.length === 1 ? 'door you can still enter' : 'doors you can still enter'}</span>
         </article>
-        <article className={`card${shortfall > 0 ? ' has-action' : ''}`}>
-          <div className="code">UNCLAIMED</div>
-          <span className="big" style={shortfall > 0 ? { color: 'var(--warn)' } : undefined}>{shortfall}</span>
+        <article className="card">
+          <div className="code">NEXT UP</div>
+          <span className="big" style={{ fontSize: next ? 22 : 27 }}>
+            {next ? next.name : 'Nothing dated'}
+          </span>
           <span className="sub">
-            {shortfall > 0
-              ? 'won, but no wallet on file — these lapse'
-              : 'every spot has a wallet against it'}
+            {next ? fmt(next.when) : 'every announced mint has been and gone'}
           </span>
         </article>
       </div>
@@ -149,9 +154,6 @@ export default async function Upcoming() {
               {r.tiers.map((t, i) => (
                 <span key={i}>
                   <b>{t.have} {t.tier}</b>
-                  {t.short > 0 && (
-                    <span style={{ color: 'var(--warn)' }}> · {t.short} with no wallet on file</span>
-                  )}
                 </span>
               ))}
             </div>
