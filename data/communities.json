@@ -1,16 +1,17 @@
 [
   {
-    "id": "bayc",
-    "name": "Bored Ape Yacht Club",
-    "icon": "🐵",
-    "x": "BoredApeYC",
-    "opensea": "https://opensea.io/collection/boredapeyachtclub",
-    "blurb": "The collection this board reads on a fresh clone, as a working example."
+    "id": "city-of-stonks",
+    "name": "City of Stonks",
+    "icon": "🗝",
+    "x": "CityOfStonks",
+    "discord": "https://discord.gg/cityofstonks",
+    "opensea": "https://opensea.io/collection/cityofstonks",
+    "blurb": "Hold a key and the room's mint spots are open to you. Five or more makes you a Key Master, which is its own tier."
   },
   {
-    "id": "demo-community",
-    "name": "Your Community",
-    "icon": "🗝",
-    "blurb": "Replace this with your own. A community with no links shows none — nothing is invented."
+    "id": "ccff00",
+    "name": "CCFF00",
+    "icon": "🟩",
+    "blurb": "Robinhood Chain. No opportunities announced for CCFF00 holders yet — this is where they will appear."
   }
 ]

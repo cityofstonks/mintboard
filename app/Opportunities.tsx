@@ -102,11 +102,16 @@ export default function Opportunities() {
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVis) }
   }, [soonest])
 
-  /** Communities that actually gate something open — never a dead filter. */
-  const usable = useMemo(() => {
-    const live = new Set(raffles.flatMap(r => r.communities ?? []))
-    return communities.filter(c => live.has(c.id))
-  }, [raffles, communities])
+  /*
+   * Every community is shown, including ones with nothing open.
+   *
+   * Hiding them was tidier and wrong: a holder of a collection with no current
+   * opportunity would find no trace of themselves and conclude the board is
+   * not for them. A dimmed chip reading 0 says the opposite — you are
+   * recognised, there is simply nothing today — and selecting it still gives
+   * them that community's links to go and follow along.
+   */
+  const usable = communities
 
   const shown = useMemo(() => pick === 'all'
     ? raffles
@@ -149,7 +154,7 @@ export default function Opportunities() {
                   cursor: 'pointer', transition: 'border-color .15s, background .15s',
                   background: on ? 'color-mix(in oklab, var(--accent) 16%, transparent)' : 'var(--glass-soft)',
                   border: `1px solid ${on ? 'color-mix(in oklab, var(--accent) 60%, transparent)' : 'var(--edge)'}`,
-                  color: on ? 'var(--ink)' : 'var(--muted)',
+                  color: on ? 'var(--ink)' : count === 0 ? 'var(--faint)' : 'var(--muted)',
                   boxShadow: 'none',
                 }}>
                 <span aria-hidden="true" style={{ fontSize: 15, lineHeight: 1 }}>{c.icon ?? '◆'}</span>
@@ -212,11 +217,23 @@ export default function Opportunities() {
               </article>
             )
           })}
-          {loaded && shown.length === 0 && (
-            <div className="empty" style={{ minWidth: 300 }}>
-              Nothing open for that community right now. Everything else is one tap away.
-            </div>
-          )}
+          {loaded && shown.length === 0 && (() => {
+            // Filtered to a community with nothing open. Still show who they
+            // are and how to follow them — an empty result is the moment a
+            // holder most needs somewhere to go.
+            const c = byId.get(pick)
+            return (
+              <div className="empty" style={{ minWidth: 'min(300px, 85vw)', textAlign: 'left' }}>
+                <strong style={{ color: 'var(--ink)' }}>
+                  Nothing open for {c?.name ?? 'that community'} right now.
+                </strong>
+                <p className="note" style={{ margin: '6px 0 0' }}>
+                  New opportunities land here as they open. Tap <b>Everything</b> to see what else is running.
+                </p>
+                {c && <div style={{ marginTop: 12 }}><CommunityBoard c={c} /></div>}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Arrows are an extra, never the only way through — the rail is a real

@@ -1,48 +1,47 @@
 [
   {
-    "id": "demo-raffle-1",
-    "project": "Demo Drop",
-    "closesAt": "2027-01-18T20:00:00Z",
+    "id": "mixels-2026-09",
+    "project": "Mixels",
+    "kind": "raffle",
+    "closesAt": "2026-09-15T18:20:05Z",
+    "communities": [
+      "city-of-stonks"
+    ],
     "tiers": [
       {
         "label": "Guaranteed",
-        "count": 10,
-        "who": "holders of 5+",
+        "count": 15,
+        "who": "Key Masters",
         "drawn": true
       },
       {
-        "label": "First come first served",
-        "count": null,
-        "who": "every holder",
-        "drawn": false
+        "label": "For Key Holders",
+        "count": 5,
+        "who": "key holders \u2014 Key Masters are not in this tier",
+        "drawn": true
       }
     ],
-    "homework": "Follow, repost and comment \u2014 then file the link in your proof channel.",
-    "note": "Reading live from GitHub. Delete this entry and add your own.",
-    "enterUrl": "https://discord.gg/your-invite",
-    "kind": "raffle",
-    "communities": [
-      "bayc",
-      "demo-community"
-    ]
+    "homework": "Engagement filed in the proof channel, tagging @CityOfStonks on the comment.",
+    "note": "Robinhood Chain. Mint date not announced yet; their own whitelist form is at mixels.fun.",
+    "enterUrl": "https://discord.gg/cityofstonks"
   },
   {
-    "id": "demo-claim-1",
-    "project": "Demo Claim",
+    "id": "gta-fcfs-1",
+    "project": "GTA \u2014 Grand Theft Alpha",
     "kind": "claim",
     "closesAt": null,
+    "communities": [
+      "city-of-stonks"
+    ],
+    "url": "https://www.gtaonrh.xyz/claim",
     "tiers": [
       {
         "label": "First come first served",
-        "count": 500,
+        "count": 1000,
         "who": "holders of every listed collection",
         "drawn": false
       }
     ],
-    "url": "https://theproject.xyz/claim",
-    "note": "A claim has no draw and no deadline \u2014 leave the closing time blank and it stays up until it fills. Delete this entry and add your own.",
-    "communities": [
-      "bayc"
-    ]
+    "note": "2,222 Vigilantes on Robinhood Chain. The guaranteed phase is finished \u2014 this one is open to everyone, including anyone who missed it. Claims from accounts not following @GTAonRH are not approved, so follow first."
   }
 ]
