@@ -4,6 +4,7 @@ import { COOKIE, adminEnabled, validToken } from '@/lib/auth'
 import { readPartners, writePartners, storeMode } from '@/lib/store'
 import type { Partner } from '@/lib/types'
 import { callerOf, tooMany } from '@/lib/limit'
+import { openRaffle, routingEnabled } from '@/lib/collab'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,7 @@ const isAdmin = async () =>
  */
 export async function GET() {
   const all = await readPartners()
-  if (await isAdmin()) return NextResponse.json({ partners: all, mode: storeMode(), admin: true })
+  if (await isAdmin()) return NextResponse.json({ partners: all, mode: storeMode(), admin: true, routing: routingEnabled() })
   const publicFields = all
     .filter(p => p.status === 'approved')
     .map(({ contact: _contact, status: _status, ...rest }) => rest)
@@ -81,10 +82,21 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true })
 }
 
-/** Approve or decline. Operators only. */
+/**
+ * Approve or decline. Operators only.
+ *
+ * `openRaffle: true` is what routes an approval through to Discord. It is a
+ * separate opt-in rather than something approval always does, because listing
+ * a partner in the directory and opening a raffle in your server are two
+ * different decisions and an operator should make them one at a time.
+ */
 export async function PATCH(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 })
-  const { id, status } = await req.json().catch(() => ({})) as { id?: string; status?: Partner['status'] }
+  const body = await req.json().catch(() => ({})) as {
+    id?: string; status?: Partner['status']
+    openRaffle?: boolean; gtd?: number; fcfs?: number; hours?: number; post?: string
+  }
+  const { id, status } = body
   if (!id || !status || !['pending', 'approved', 'declined'].includes(status)) {
     return NextResponse.json({ error: 'Need an id and a status.' }, { status: 400 })
   }
@@ -97,7 +109,23 @@ export async function PATCH(req: Request) {
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
-  return NextResponse.json({ ok: true })
+
+  if (!body.openRaffle || status !== 'approved') return NextResponse.json({ ok: true })
+
+  /*
+   * The status is already saved before this runs, on purpose. If the bot is
+   * unreachable the approval still stands and the operator can retry the
+   * raffle alone — rolling the approval back would make one failure look like
+   * two and invite a second click that double-posts.
+   */
+  const routed = await openRaffle(all[at], {
+    gtd: body.gtd, fcfs: body.fcfs, hours: body.hours, post: body.post,
+  })
+  return NextResponse.json({
+    ok: true,
+    raffle: routed.ok ? { messageId: routed.messageId } : null,
+    raffleError: routed.ok ? undefined : routed.error,
+  })
 }
 
 export async function DELETE(req: Request) {

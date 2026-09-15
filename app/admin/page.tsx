@@ -1,6 +1,7 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
 import type { Partner, RaffleEntry, RaffleTier } from '@/lib/types'
+import { readOffer } from '@/lib/offer'
 
 const blank = (): RaffleEntry => ({
   id: '', project: '', kind: 'raffle', closesAt: null,
@@ -21,6 +22,8 @@ export default function Admin() {
   const [password, setPassword] = useState('')
   const [list, setList] = useState<RaffleEntry[]>([])
   const [mode, setMode] = useState<string>('')
+  /** Whether approval can actually reach Discord. */
+  const [routing, setRouting] = useState(false)
   const [draft, setDraft] = useState<RaffleEntry>(blank())
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
@@ -32,7 +35,13 @@ export default function Admin() {
     const d = await r.json()
     setList(d.raffles ?? []); setMode(d.mode ?? ''); setAuthed(true)
     const pr = await fetch('/api/partners')
-    if (pr.ok) setPartners((await pr.json()).partners ?? [])
+    if (pr.ok) {
+      const pd = await pr.json()
+      setPartners(pd.partners ?? [])
+      // Whether this deployment can actually reach the bot. Shown rather than
+      // discovered by clicking a button that does nothing.
+      setRouting(Boolean(pd.routing))
+    }
   }, [])
 
   useEffect(() => { void load() }, [load])
@@ -71,17 +80,29 @@ export default function Admin() {
     void load()
   }
 
-  async function decide(id: string, status: Partner['status']) {
+  async function decide(id: string, status: Partner['status'], raffle?: { gtd: number; fcfs: number; hours: number }) {
     setBusy(true)
     const r = await fetch('/api/partners', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status }),
+      body: JSON.stringify({ id, status, openRaffle: Boolean(raffle), ...raffle }),
     })
     const d = await r.json()
     setBusy(false)
-    setMsg(r.ok ? `Marked ${status}.` : (d.error ?? 'Could not update.'))
+    if (!r.ok) { setMsg(d.error ?? 'Could not update.'); void load(); return }
+    // Approving and opening the raffle are two outcomes; a half-success must
+    // not report as a clean one, or an operator walks away from a raffle that
+    // never posted.
+    if (raffle && d.raffleError) setMsg(`Approved, but the raffle did NOT open: ${d.raffleError}`)
+    else if (raffle && d.raffle) setMsg(`Approved and the raffle is live in Discord (message ${d.raffle.messageId}).`)
+    else setMsg(`Marked ${status}.`)
     void load()
   }
+
+  /** What the operator is about to promise the room, per partner id. */
+  const [draftRaffle, setDraftRaffle] = useState<Record<string, { gtd: number; fcfs: number; hours: number }>>({})
+  const raffleFor = (p: Partner) => draftRaffle[p.id] ?? { ...readOffer(p.offer ?? ''), hours: 12 }
+  const editRaffle = (id: string, patch: Partial<{ gtd: number; fcfs: number; hours: number }>, base: { gtd: number; fcfs: number; hours: number }) =>
+    setDraftRaffle(s => ({ ...s, [id]: { ...base, ...patch } }))
 
   const setTier = (i: number, patch: Partial<RaffleTier>) =>
     setDraft(s => ({ ...s, tiers: s.tiers.map((t, n) => n === i ? { ...t, ...patch } : t) }))
@@ -179,10 +200,48 @@ export default function Admin() {
             {p.requirements && <div className="sub"><b>Asks for:</b> {p.requirements}</div>}
             {p.contact && <div className="sub"><b>Contact:</b> {p.contact}</div>}
             {p.note && <div className="sub">{p.note}</div>}
+            {p.status !== 'approved' && (() => {
+              const d = raffleFor(p)
+              return (
+                <div style={{ borderTop: '1px solid var(--edge)', paddingTop: 10, display: 'grid', gap: 8 }}>
+                  <span className="note">
+                    Read from &ldquo;{p.offer}&rdquo; — correct it before you open anything. These numbers become a promise.
+                  </span>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <label className="note">GTD<br />
+                      <input type="number" min={0} max={500} value={d.gtd} style={{ width: 80 }}
+                        onChange={e => editRaffle(p.id, { gtd: Number(e.target.value) }, d)} /></label>
+                    <label className="note">FCFS<br />
+                      <input type="number" min={0} max={500} value={d.fcfs} style={{ width: 80 }}
+                        onChange={e => editRaffle(p.id, { fcfs: Number(e.target.value) }, d)} /></label>
+                    <label className="note">Open for (h)<br />
+                      <input type="number" min={1} max={168} value={d.hours} style={{ width: 80 }}
+                        onChange={e => editRaffle(p.id, { hours: Number(e.target.value) }, d)} /></label>
+                  </div>
+                </div>
+              )
+            })()}
             <div style={{ display: 'flex', gap: 8, marginTop: 'auto', flexWrap: 'wrap' }}>
-              {p.status !== 'approved' && <button type="button" disabled={busy} onClick={() => decide(p.id, 'approved')}>Approve</button>}
+              {p.status !== 'approved' && (() => {
+                const d = raffleFor(p)
+                const none = d.gtd + d.fcfs < 1
+                return (
+                  <button type="button" disabled={busy || none || !routing}
+                    title={!routing ? 'COLLAB_BOT_URL / COLLAB_BOT_SECRET are not set'
+                      : none ? 'Set at least one spot' : `Posts @everyone: ${d.gtd} GTD + ${d.fcfs} FCFS, ${d.hours}h`}
+                    onClick={() => decide(p.id, 'approved', d)}>
+                    Approve &amp; open raffle
+                  </button>
+                )
+              })()}
+              {p.status !== 'approved' && <button type="button" className="ghost" disabled={busy} onClick={() => decide(p.id, 'approved')}>Approve only</button>}
               {p.status !== 'declined' && <button type="button" className="ghost" disabled={busy} onClick={() => decide(p.id, 'declined')}>Decline</button>}
             </div>
+            {p.status !== 'approved' && !routing && (
+              <p className="note" style={{ margin: 0, color: 'var(--warn)' }}>
+                Approval cannot reach Discord: set COLLAB_BOT_URL and COLLAB_BOT_SECRET.
+              </p>
+            )}
             {p.status === 'pending' && (
               <p className="note" style={{ margin: 0 }}>
                 Open their account before approving. Everything here is their own unverified claim.
