@@ -3,6 +3,7 @@ import Directory from './Directory'
 import Apply from './Apply'
 import Quality from './Quality'
 import { allStats, byRetention } from '@/lib/holderStats'
+import { listable, standing, PARTNER_FLOOR, MIN_SAMPLE } from '@/lib/stats'
 
 export const metadata: Metadata = {
   title: 'Collections — Mintboard',
@@ -22,7 +23,7 @@ export default function Partners() {
       <p className="heading">Open right now</p>
       <Directory />
 
-      {allStats().length > 0 && (
+      {listable(allStats()).length > 0 && (
         <>
           <p className="heading">What their holders did last time</p>
           <p className="lede" style={{ marginBottom: 16 }}>
@@ -37,8 +38,22 @@ export default function Partners() {
             did with them. It is the same question asked of us, which is the only reason it belongs
             in the same table.
           </p>
+          <p className="lede" style={{ marginBottom: 16 }}>
+            {/*
+              * Stated on the page rather than applied quietly. A directory that
+              * silently drops rooms is a directory nobody can trust; one that
+              * publishes its bar can be argued with, which is the point.
+              */}
+            <b>Only rooms holding {Math.round(PARTNER_FLOOR * 100)}% or better are listed.</b>{' '}
+            Below that a community is not shown here and does not surface in collab matching — it
+            can still come to us directly. This grades <em>rooms, not art</em>: a low number means
+            the people handed an allocation sold it, which is a fact about a community and the one
+            fact a project needs before deciding where its spots go. Rooms with fewer than{' '}
+            {MIN_SAMPLE} mints are not ranked at all, because too new to measure is a different
+            thing from measured and poor.
+          </p>
           <div className="cards">
-            {byRetention(allStats()).map((s, i) => (
+            {byRetention(listable(allStats())).map((s, i) => (
               <article className="card" key={s.handle}
                 style={s.outbound ? { borderColor: 'color-mix(in oklab, var(--accent) 45%, transparent)' } : undefined}>
                 <div className="code" style={s.outbound ? { color: 'var(--accent)' } : undefined}>
