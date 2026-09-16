@@ -30,19 +30,23 @@ function tag(s: string): string {
 }
 
 export async function GET(req: NextRequest) {
-  const payload = JSON.stringify({
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    mints,
-    spots,
-  })
-  const etag = tag(payload)
+  /*
+   * The tag is computed from the DATA, never from the response.
+   *
+   * The first version hashed a payload carrying `generatedAt: new Date()`, so
+   * the fingerprint changed on every request and the ETag could never match —
+   * a revalidation cost a full 23KB body every time and the header was pure
+   * decoration. A cache header that cannot hit is worse than none, because it
+   * looks like it is working.
+   */
+  const data = JSON.stringify({ version: 1, mints, spots })
+  const etag = tag(data)
 
   if (req.headers.get('if-none-match') === etag) {
     return new NextResponse(null, { status: 304, headers: { etag } })
   }
 
-  return new NextResponse(payload, {
+  return new NextResponse(data, {
     headers: {
       'content-type': 'application/json',
       etag,
