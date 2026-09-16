@@ -13,11 +13,20 @@ primary_region = 'sjc'
 [http_service]
   internal_port = 8080
   force_https = true
-  # Scaling to zero is right for this: the board is bursty — quiet for hours,
-  # then three hundred people at once when a raffle closes.
+  # One machine stays warm, and it is the bot that decides this.
+  #
+  # Scaling to zero suited a board: bursty, and a second of wake-up costs a
+  # reader nothing. But this host now answers Discord interactions, where the
+  # budget is a hard three seconds for the WHOLE round trip and a miss is
+  # user-visible — "City Bot didn't respond in time", which we have already
+  # shipped once. A suspended machine resuming inside that window is likely,
+  # not certain, and likely is the wrong standard for a button somebody is
+  # pressing in front of their friends.
+  #
+  # The second machine still scales away; only the floor changed.
   auto_stop_machines = 'suspend'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
 
   # A health check that hits a route actually doing work, not a static file.
   # A process that is up but cannot answer a board query is not healthy, and
