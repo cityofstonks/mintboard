@@ -237,5 +237,19 @@
     "startsAt": null,
     "note": "Robinhood Chain. 20 spots to the room \u2014 15 guaranteed for Key Masters, 5 for Key Holders \u2014 plus 5 from the team allocation, 25 in total. Mint date not announced yet; their own whitelist form is at mixels.fun.",
     "url": "https://mixels.fun"
+  },
+  {
+    "code": "ARCT",
+    "name": "Arc Tellers",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "arctellers-gtd",
+        "tier": "GTD"
+      }
+    ],
+    "startsAt": "2026-09-16T14:00:00.000Z",
+    "note": "4,242 on ARC \u2014 the chain Circle built, live since 16 September with BlackRock, Visa, Mastercard and DTCC in the genesis validator set. Gas is paid in USDC. Free mint. Everyone who entered the six-hour box and filed a wallet is guaranteed.",
+    "url": "https://x.com/ArcTellers"
   }
 ]
