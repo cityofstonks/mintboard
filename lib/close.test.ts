@@ -78,3 +78,34 @@ test('an empty tier says so rather than looking like a successful draw of nobody
   const text = announcement('Ghost', r, [{ label: 'Spots', count: 20 }], 'https://x.test/b')
   assert.match(text, /nobody entered/)
 })
+
+test('a tier can be restricted to holders above a threshold', () => {
+  /*
+   * "3 guaranteed, Key Masters only, then 5 open to every holder." Without a
+   * per-tier floor the draw took everyone for every tier, so a tier promising
+   * Key Masters would hand spots to anyone — the post becomes a lie that the
+   * winners list proves.
+   */
+  const ents = [
+    { id: 'master1', held: 9, boosted: false },
+    { id: 'master2', held: 5, boosted: false },
+    { id: 'holder1', held: 1, boosted: false },
+    { id: 'holder2', held: 2, boosted: false },
+  ]
+  const r = drawTiers(ents, [
+    { label: 'GTD', count: 2, minHeld: 5 },
+    { label: 'FCFS', count: 2 },
+  ], DEFAULTS, 'seed')
+  assert.deepEqual(new Set(r.tiers[0].winners), new Set(['master1', 'master2']))
+  // The open tier takes whoever is left, masters included only if they did not
+  // already win above — nobody wins twice.
+  for (const w of r.tiers[1].winners) assert.ok(!r.tiers[0].winners.includes(w))
+})
+
+test('a restricted tier short of eligible entrants reports the shortfall', () => {
+  const r = drawTiers(
+    [{ id: 'a', held: 9, boosted: false }, { id: 'b', held: 1, boosted: false }],
+    [{ label: 'GTD', count: 3, minHeld: 5 }], DEFAULTS, 'seed')
+  assert.deepEqual(r.tiers[0].winners, ['a'])
+  assert.equal(r.short, 2, 'two guaranteed spots had nobody eligible')
+})

@@ -14,7 +14,24 @@
  */
 import { weigh, draw, type Entrant, type Weighted, type Params } from './tickets.ts'
 
-export interface Tier { label: string; count: number | null; who?: string }
+export interface Tier {
+  label: string
+  count: number | null
+  who?: string
+  /**
+   * Minimum holding to be eligible for THIS tier.
+   *
+   * A box can now say "3 guaranteed, Key Masters only, then 5 open to every
+   * holder". Without it the draw took every entrant for every tier and a tier
+   * promising Key Masters would quietly hand spots to anyone — the post would
+   * be a lie the winners list proves.
+   *
+   * Uses held_at_entry, which is already recorded per entry, so eligibility is
+   * judged at the moment somebody entered rather than re-read at draw time.
+   * Somebody who qualified when they pressed the button keeps their place.
+   */
+  minHeld?: number
+}
 
 /** Everything a pass decided, so it can be checked afterwards by anyone. */
 export interface Result {
@@ -41,7 +58,10 @@ export function drawTiers(entrants: Entrant[], tiers: Tier[], p: Params, seed: s
   let short = 0
 
   for (const t of tiers) {
-    const left = pool.filter(w => !taken.has(w.id))
+    const eligible = t.minHeld
+      ? new Set(entrants.filter(e => (e.held ?? 0) >= t.minHeld!).map(e => e.id))
+      : null
+    const left = pool.filter(w => !taken.has(w.id) && (!eligible || eligible.has(w.id)))
     // A null count means "everyone left qualifies" — an FCFS list rather than
     // a fixed number of seats.
     const want = t.count === null ? left.length : t.count
