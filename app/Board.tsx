@@ -209,10 +209,30 @@ export default function Board({ embed = false }: { embed?: boolean }) {
                     <div><span className="code">{r.code}</span> <span className="tier">{r.tier}</span></div>
                     <h3>{r.url ? <a href={r.url} target="_blank" rel="noopener">{r.name}</a> : r.name}</h3>
                     <div>
-                      <span className={`big s-${r.state}`}>
-                        {r.state === 'live' ? 'MINTING NOW' : r.state === 'tbd' ? 'TBD' : (countdown(r.when, now) ?? fmt(r.when))}
-                      </span>{' '}
-                      {r.when && r.state !== 'live' && <span className="at">{fmt(r.when)}</span>}
+                      {/*
+                        * The date once, never twice.
+                        *
+                        * The headline falls back to fmt() when countdown()
+                        * returns null — which is every past date — and the line
+                        * beside it printed fmt() unconditionally. A closed mint
+                        * therefore read "SEP 14, 07:00 AM SEP 14, 07:00 AM".
+                        * The second line exists to date a countdown, so it only
+                        * belongs when there is a countdown to date.
+                        */}
+                      {(() => {
+                        const ticking = r.state !== 'live' && r.state !== 'tbd'
+                          ? countdown(r.when, now) : null
+                        return (
+                          <>
+                            <span className={`big s-${r.state}`}>
+                              {r.state === 'live' ? 'MINTING NOW'
+                                : r.state === 'tbd' ? 'TBD'
+                                : (ticking ?? fmt(r.when))}
+                            </span>{' '}
+                            {r.when && ticking && <span className="at">{fmt(r.when)}</span>}
+                          </>
+                        )
+                      })()}
                     </div>
                     {r.phases.length > 0 && (
                       <div className="phases">

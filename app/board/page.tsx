@@ -9,8 +9,8 @@ export default function Page() {
         <p className="lede">{config.tagline} Nothing here is an advert: a mint only appears if
           {' '}<em>you</em> qualify for it — a spot you were drawn, or an asset you hold.</p>
         <p className="note" style={{ marginTop: 10 }}>
-          Running City of Stonks&rsquo; live data. Hold a key and you will see your own spots;
-          hold none and you will see the doors that are open to everyone.
+          Running City of Stonks&rsquo; live data. No key needed and nothing to connect &mdash;
+          if a wallet has won a spot, it will show, whatever it holds today.
         </p>
       </div>
       <Board />
