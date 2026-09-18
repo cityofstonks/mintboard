@@ -251,5 +251,19 @@
     "startsAt": "2026-09-16T14:00:00.000Z",
     "note": "4,242 on ARC \u2014 the chain Circle built, live since 16 September with BlackRock, Visa, Mastercard and DTCC in the genesis validator set. Gas is paid in USDC. Free mint. Everyone who entered the six-hour box and filed a wallet is guaranteed.",
     "url": "https://x.com/ArcTellers"
+  },
+  {
+    "code": "SFRZ",
+    "name": "Screenfreakz",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "screenfreakz-gtd",
+        "tier": "GTD"
+      }
+    ],
+    "startsAt": "2026-09-22T00:00:00.000Z",
+    "note": "3,333 on Robinhood Chain at 0.0033. A PFP collection that evolves \u2014 every holder gets a free trait pack every two weeks, and paid packs each guarantee one trait from Common up to the ultra-rare Mystical. 15 guaranteed spots, drawn from the 24-hour box.",
+    "url": "https://x.com/screenfreakz"
   }
 ]
