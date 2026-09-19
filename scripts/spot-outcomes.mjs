@@ -174,3 +174,38 @@ if (WRITE && results.length) {
 } else {
   console.log(`\n${results.length} result(s). Pass --write to save.`)
 }
+
+/*
+ * --aggregate: fold the per-mint outcomes into the City of Stonks row that
+ * the collections page actually shows.
+ *
+ * The SOLD / HOLD / GOLD card reads one row from holder-stats.json, so a
+ * per-mint file nobody aggregates is a file nobody sees. Doing the fold here
+ * rather than by hand means the next mint updates the headline number without
+ * somebody remembering to add two figures together.
+ *
+ * `baseline` is the EVM history measured before this script existed — three
+ * mints, scanned 15 September. It is kept as its own entry so the fold is
+ * baseline + outcomes rather than an ever-growing number nobody can re-derive.
+ */
+if (argv.includes('--aggregate')) {
+  const statsPath = new URL('../data/holder-stats.json', import.meta.url)
+  const stats = JSON.parse(readFileSync(statsPath, 'utf8'))
+  const outcomes = JSON.parse(readFileSync(new URL('../data/spot-outcomes.json', import.meta.url), 'utf8'))
+  const row = stats.find(s => s.handle === 'city-of-stonks')
+  if (!row) { console.error('no city-of-stonks row to aggregate into'); process.exit(1) }
+  if (!row.baseline) {
+    // First run: freeze what was already there as the baseline.
+    row.baseline = { minted: row.minted, held: row.held, boughtMore: row.boughtMore, across: row.across ?? 0 }
+    console.log(`froze baseline: ${row.baseline.minted} spots across ${row.baseline.across} mints`)
+  }
+  const b = row.baseline
+  row.minted = b.minted + outcomes.reduce((a, o) => a + o.minted, 0)
+  row.held = b.held + outcomes.reduce((a, o) => a + o.held, 0)
+  row.boughtMore = b.boughtMore + outcomes.reduce((a, o) => a + (o.boughtMore ?? 0), 0)
+  row.across = b.across + outcomes.length
+  row.scannedAt = new Date().toISOString()
+  writeFileSync(statsPath, JSON.stringify(stats, null, 2) + '\n')
+  const pct = Math.round((row.held / row.minted) * 100)
+  console.log(`city-of-stonks: ${row.minted} spots across ${row.across} mints · ${row.held} held (${pct}%) · ${row.boughtMore} gold`)
+}

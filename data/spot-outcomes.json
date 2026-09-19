@@ -11,6 +11,7 @@
     "unreadable": 0,
     "chain": "bitcoin",
     "scannedAt": "2026-09-19T00:06:37.590Z",
-    "method": "ordinals.com address pages, inscription ids ending 70ad; spends checked against the outputs they moved"
+    "method": "ordinals.com address pages, inscription ids ending 70ad; spends checked against the outputs they moved",
+    "boughtMore": 1
   }
 ]

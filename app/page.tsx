@@ -1,7 +1,6 @@
 import config from '@/mintboard.config'
 import type { Metadata } from 'next'
 import Opportunities from './Opportunities'
-import Retention from './Retention'
 import HeroDemo from './HeroDemo'
 import spots from '@/data/spots.json'
 import mints from '@/data/mints.json'
@@ -95,8 +94,6 @@ export default function Landing() {
       </section>
 
       <Opportunities />
-
-      <Retention />
 
       <section className="wrap" style={{ paddingTop: 0, paddingBottom: 40 }}>
         <div className="rules">

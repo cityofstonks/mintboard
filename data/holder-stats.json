@@ -132,13 +132,19 @@
   {
     "handle": "city-of-stonks",
     "collection": "City of Stonks",
-    "minted": 288,
-    "held": 191,
-    "boughtMore": 38,
+    "minted": 306,
+    "held": 209,
+    "boughtMore": 39,
     "keysNow": 904,
-    "scannedAt": "2026-09-15T04:10:00.000Z",
+    "scannedAt": "2026-09-19T02:10:41.007Z",
     "atBlock": 63365092,
     "outbound": true,
-    "across": 3
+    "across": 4,
+    "baseline": {
+      "minted": 288,
+      "held": 191,
+      "boughtMore": 38,
+      "across": 3
+    }
   }
 ]
