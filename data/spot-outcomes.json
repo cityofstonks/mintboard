@@ -1,5 +1,21 @@
 [
   {
+    "code": "ARCT",
+    "name": "Arc Tellers",
+    "spots": 93,
+    "checked": 93,
+    "minted": 72,
+    "held": 53,
+    "sold": 19,
+    "neverMinted": 21,
+    "unreadable": 0,
+    "boughtMore": 18,
+    "tokensHeld": 415,
+    "chain": "arc",
+    "scannedAt": "2026-09-19T00:00:00.000Z",
+    "method": "balanceOf on 0xbbde39d8\u20269973 plus a Transfer-log scan of the mint window; a sale is proven by a token arriving and leaving, never inferred from an empty wallet"
+  },
+  {
     "code": "TOAD",
     "name": "Toadstools",
     "spots": 25,
