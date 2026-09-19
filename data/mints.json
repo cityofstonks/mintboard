@@ -54,7 +54,9 @@
         "price": null,
         "limit": 1
       }
-    ]
+    ],
+    "marker": "70ad",
+    "spotsList": "toadstools-spots"
   },
   {
     "code": "HWLV",

@@ -1,0 +1,16 @@
+[
+  {
+    "code": "TOAD",
+    "name": "Toadstools",
+    "spots": 25,
+    "checked": 25,
+    "minted": 18,
+    "held": 18,
+    "sold": 0,
+    "neverMinted": 7,
+    "unreadable": 0,
+    "chain": "bitcoin",
+    "scannedAt": "2026-09-19T00:06:37.590Z",
+    "method": "ordinals.com address pages, inscription ids ending 70ad; spends checked against the outputs they moved"
+  }
+]

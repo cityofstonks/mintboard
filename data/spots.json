@@ -270,7 +270,18 @@
       "0x97371d7b87e76ea1919e567e7c96b13f458499b2": "bc1ph6uuecc0vjf3r2p93jm0xh2f39l6r8mnqhfzu8g70mx83xhh32yqmgc0zq",
       "0x5df221ca0bb4ea60138be0ba78036394a08d00d9": "bc1p0kf7qkhh9pd7luu24667ryclz26rjnrwnzxta72l88ff9wghtgdq0xchrg",
       "0x28f0388ff37f1fb607c032c44e57dcb77cdc7f10": "bc1py7lf8xkfttpwkk2vtsw6dpeqq0phtslf475xlftxl3t7rjtywasstsz68a"
-    }
+    },
+    "deliveryExtra": [
+      "bc1p4elkcjvlpl6u8xh3u7xa3s6huaftkvayygwvxnulu3zk44vumuxqpx698x",
+      "bc1p4wc68jvrf724vw7vpz4xm25l4yhlj8a0zcptlg2c7smv4f7gvmcqx5m7r4",
+      "bc1pdfcafufaxqsp2s0pf8spang5uz6uywarzada893g8yxqe9q04e2q6wcwd3",
+      "bc1pgm2cstktfa89fvevqmg3w3cs8mtfvdc2kwg8stexucjvw3pkaqpsqlyamn",
+      "bc1pj7yrrnyz3rh7a2v3ttu0yye8vee6ejcjm925lfaeu356wfyep4fqcnpfcx",
+      "bc1pqunuexf6x5fjf5mg9zg96u27fjrzdy2vmwl3fmw8r9u83al4tdtqtetupw",
+      "bc1pvn5tzxu5r2mw0uermf233qpnsruyscz98gau5h739c3anah7h4wsxu42f7",
+      "bc1px85h9mn2nqzx7npyt3cmuya8s60jn952s3xt9g2clwledaerk6hqm9hm2u"
+    ],
+    "deliveryExtraNote": "Taproot addresses from the manifest that the evm->btc map has no key for. Three winners only ever gave a bitcoin address, so there is no 0x to key them by."
   },
   "w3bfrog-og": {
     "source": "W3BFR0G, 10 OG spots, Key Masters, drawn 2026-09-14",

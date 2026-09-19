@@ -233,3 +233,41 @@ export interface HolderStats {
    */
   across?: number
 }
+
+
+/**
+ * How OUR room behaved with a spot somebody gave US.
+ *
+ * The mirror of HolderStats, and deliberately a separate type. HolderStats
+ * asks how a partner's community held the allocation we handed them; this
+ * asks how we held theirs. Same shape of question, opposite direction, and
+ * collapsing them into one table would make both unreadable.
+ *
+ * This is the number a partner publishes about us. Toadstools said out loud
+ * they kept every wallet from every community that minted and would post
+ * which room had diamond hands and which was the jeet — so it is worth
+ * knowing our own answer before somebody else prints theirs.
+ */
+export interface SpotOutcome {
+  /** The mint code on the board, e.g. TOAD. */
+  code: string
+  name: string
+  /** Spots we were given. */
+  spots: number
+  /** Wallets we could actually read. spots - checked is our blind spot. */
+  checked: number
+  /** Claimed the mint. */
+  minted: number
+  /** Of those, still holding. */
+  held: number
+  /** Minted and no longer holding. Proven, not inferred from an empty wallet. */
+  sold: number
+  /** Had a spot and never claimed it. Not the same as selling and never will be. */
+  neverMinted: number
+  /** Wallets the indexer would not answer for. Never folded into any of the above. */
+  unreadable: number
+  chain: 'bitcoin' | string
+  scannedAt: string
+  /** How it was measured, so a number can always be argued with. */
+  method: string
+}
