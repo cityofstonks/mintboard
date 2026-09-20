@@ -524,8 +524,8 @@
     ]
   },
   "screenfreakz-gtd": {
-    "source": "Screenfreakz, 15 guaranteed spots. Drawn 2026-09-19 from the 24-hour box in #mint-spots. Allocation secured by 0xcakra (17 total: 15 raffled, 1 his, 1 vault).",
-    "expected": 15,
+    "source": "Screenfreakz, 17 spots. 15 drawn 2026-09-19 from the 24-hour box in #mint-spots, plus 0xcakra who secured the allocation and the treasury. The treasury address is the one in TREASURY, not the verify address \u2014 the verify address is the CCFF00 token contract, and a mint sent there would be stuck in it.",
+    "expected": 17,
     "wallets": [
       "0x524518d741daf7fb93aaa652b1eda9d002079cb7",
       "0x585340d68cbaca1c2a9deea1ea4ab4025c088389",
@@ -541,7 +541,9 @@
       "0x46652c7f0909c86da7df4004200fa45cdd612e2f",
       "0x7e511f54154de2292cf93d08502f6ffa737bf230",
       "0x7deb5d3500598319552279e125529e4bb8d63b97",
-      "0x19bbebf1027df2c356bd5731cecb5fe81836036c"
+      "0x19bbebf1027df2c356bd5731cecb5fe81836036c",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47",
+      "0x8bfc8cd3a30a1b531dd8306ac893ec89f5e920bd"
     ]
   },
   "dnd-gtd": {
