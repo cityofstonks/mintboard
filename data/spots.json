@@ -522,5 +522,65 @@
       "0xb21b5ab59f6005627578a25dfc61b0f365f3e036",
       "0x585cc24ee9f9e8afec13a10ec10fbc709e19328f"
     ]
+  },
+  "screenfreakz-gtd": {
+    "source": "Screenfreakz, 15 guaranteed spots. Drawn 2026-09-19 from the 24-hour box in #mint-spots. Allocation secured by 0xcakra (17 total: 15 raffled, 1 his, 1 vault).",
+    "expected": 15,
+    "wallets": [
+      "0x524518d741daf7fb93aaa652b1eda9d002079cb7",
+      "0x585340d68cbaca1c2a9deea1ea4ab4025c088389",
+      "0x39576596263f2f0a1805ea6106d74c7caea43337",
+      "0x13084c989933222ef3a29073be9ee6df1b8bb390",
+      "0x2c569b75cf91adb9196f4809d1c1bcfeef05f5d3",
+      "0x0af45401930a46b0849a97648f757e7c4ef95f75",
+      "0x4b38b9dcc856c5a7d130703d8ac9c6c682b4be04",
+      "0x6810ac2ef57dde5dd2f7d70aa97a0d3396a46b8a",
+      "0x794e7f7ee2599ab3c17e0ed0fd879331444fceac",
+      "0xe02ae28eb98d5807379743ae2e6025401ee4a5b3",
+      "0x30e6f714511811eea180b1f3bdb47664d72ee7b5",
+      "0x46652c7f0909c86da7df4004200fa45cdd612e2f",
+      "0x7e511f54154de2292cf93d08502f6ffa737bf230",
+      "0x7deb5d3500598319552279e125529e4bb8d63b97",
+      "0x19bbebf1027df2c356bd5731cecb5fe81836036c"
+    ]
+  },
+  "dnd-gtd": {
+    "source": "DND, 3 guaranteed. Key Masters only, 5+ keys. Drawn 2026-09-17.",
+    "expected": 3,
+    "wallets": [
+      "0x39576596263f2f0a1805ea6106d74c7caea43337",
+      "0x4fe755feaa47406745535280df2bbc9478298277",
+      "0xfeda7060356ed14698f296973eaa9e8859f44ac8"
+    ]
+  },
+  "dnd-fcfs": {
+    "source": "DND, 5 first-come, any key holder. Drawn 2026-09-17.",
+    "expected": 5,
+    "wallets": [
+      "0x89d1829ef606dccab86ea06364b1d962d89e5015",
+      "0x683d119bc9310dfee6e6bc1e782c5f8ff4bf8d52",
+      "0x6e4ec434353fe3a7d9d0b5e0ba4500d9945289df",
+      "0x7a5fff6406b5e66112fc55da125baa6f1cf501d6",
+      "0xadec6fffbfff4f682d253ccc4eb495e11dae9e33"
+    ]
+  },
+  "typical-tigers-gtd": {
+    "source": "Typical Tigers, 3 spots. Drawn 2026-09-16.",
+    "expected": 3,
+    "wallets": [
+      "0xf0dbcebf494c01b101a1576c6c7e68067498c340",
+      "0xfeda7060356ed14698f296973eaa9e8859f44ac8",
+      "0x72eddda4a8302adf37adafb628ab162ae99bce47"
+    ]
+  },
+  "rare-people-gtd": {
+    "source": "Rare People, 4 guaranteed. Key Masters only, and NOT a draw \u2014 the first four to react and write a paragraph in #key-masters took them, ordered by message timestamp because Discord does not record when a reaction happened.",
+    "expected": 4,
+    "wallets": [
+      "0xcf16afc07951ea661e71a57cff6348d0d747fa2a",
+      "0x0e409c358160fd67bc3c1bd039df4b752f46ca44",
+      "0x39576596263f2f0a1805ea6106d74c7caea43337",
+      "0xf5bdd73a7fc0196f1bd7fbe8a880337a134979d8"
+    ]
   }
 }

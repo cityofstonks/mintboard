@@ -267,5 +267,49 @@
     "startsAt": "2026-09-22T00:00:00.000Z",
     "note": "3,333 on Robinhood Chain at 0.0033. A PFP collection that evolves \u2014 every holder gets a free trait pack every two weeks, and paid packs each guarantee one trait from Common up to the ultra-rare Mystical. 15 guaranteed spots, drawn from the 24-hour box.",
     "url": "https://x.com/screenfreakz"
+  },
+  {
+    "code": "DND",
+    "name": "DND",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "dnd-gtd",
+        "tier": "GTD"
+      },
+      {
+        "via": "spots",
+        "list": "dnd-fcfs",
+        "tier": "FCFS"
+      }
+    ],
+    "note": "2026 collection coming to Robinhood Chain. 3 guaranteed for Key Masters, 5 first-come for any key holder. No mint date announced yet.",
+    "url": "https://x.com/DNDaliens"
+  },
+  {
+    "code": "TYPT",
+    "name": "Typical Tigers",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "typical-tigers-gtd",
+        "tier": "GTD"
+      }
+    ],
+    "note": "3 spots drawn from the box in #mint-spots on 16 September. No mint date announced yet.",
+    "url": "https://x.com/TypicalTigers"
+  },
+  {
+    "code": "RARE",
+    "name": "Rare People",
+    "eligibility": [
+      {
+        "via": "spots",
+        "list": "rare-people-gtd",
+        "tier": "GTD"
+      }
+    ],
+    "note": "4 guaranteed spots, Key Masters only. Rare People have not published supply, price, chain or a mint date yet \u2014 this is early, which was the point of taking it.",
+    "url": "https://x.com/RarePeoplesNFT/status/2100268443912294438"
   }
 ]
